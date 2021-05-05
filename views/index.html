@@ -20,17 +20,54 @@
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
         var radius = 16
+        var playerSpeed = 4
 
+        var rightPressed = false;
+        var leftPressed = false;
+        var upPressed = false;
+        var downPressed = false;
         function PlayerBall(id){
             this.id = id;
-            this. color = "#FF00FF";
+            this.color = "#FF00FF";
             this.x = 1024/2;
             this.y = 768/2;
         }
-
+        
         var balls  = [];
         var ballMap = {};
         var myId;
+        document.addEventListener("keydown", keyDownHandler,false);
+        document.addEventListener("keyup", keyUpHandler,false);
+
+        function keyDownHandler(e){
+            if (e.code == 'ArrowRight'){
+                rightPressed = true;
+            }
+            if (e.code == 'ArrowLeft'){
+                leftPressed = true;
+            }
+            if(e.code == "ArrowDown"){
+                downPressed = true;
+            }
+            if(e.code == "ArrowUp"){
+                upPressed = true;
+            }
+        }
+
+        function keyUpHandler(e){
+            if (e.code == "ArrowRight"){
+                rightPressed = false;
+            }
+            if (e.code == "ArrowLeft"){
+                leftPressed = false;
+            }
+            if(e.code == "ArrowDown"){
+                downPressed = false;
+            }
+            if(e.code == "ArrowUp"){
+                upPressed = false;
+            }
+        }
 
         function joinUser(id,color,x,y){
             let ball = new PlayerBall(id);
@@ -51,19 +88,17 @@
                     break;
                 }
             }
-
             delete ballMap[id];
         }
 
         function updateState(id,x,y){
             let ball = ballMap[id];
-
             if(!ball){
                 return;
             }
-
             ball.x = x;
             ball.y = y;
+
         }
 
         var socket = io();
@@ -82,32 +117,24 @@
         socket.on('leave_user', function(data){
             leaveUser(data);
         })
-
         socket.on('update_state', function(data){
-            let stateNum = data.state_num;
-            if(stateNum > lastStateNum){
-                lastStateNum = stateNum;
-
-                let time = new Date().getTime();
-
-                if(stateBuffer.length == 0 || stateBuffer[stateBuffer.length -1][1] < time){
-                    stateBuffer.push([data,time]);
-                    if(stateBuffer.length > 256){
-                        stateBuffer.shift();
-                    }
-                }
-                else if(stateBuffer.length > 0){
-                    stateBuffer[stateBuffer.length-1] = [data, time];
-                }
-
-                if (myId){
-                    let myBall = data[myId];
-                    if(myBall && myBall.last_input_num >= lastInputNum){
-                        updateState(myId, myBall.x, myBall.y);
-                    }
-                }
-            }
+            console.log("here", data);
+            updateState(data.id, data.x, data.y);
         })
+
+        
+        function sendData() {
+            let curPlayer = ballMap[myId];
+            let data = {};
+            data = {
+                id : curPlayer.id,
+                x: curPlayer.x,
+                y: curPlayer.y,
+            };
+            if(data){
+                socket.emit("send_location", data);
+            }
+        }
 
         var inputMap =  {};
         var previousUpdateTime = new Date().getTime();
@@ -125,7 +152,6 @@
                     let ball = balls[i];
                     
                     ctx.fillStyle = ball.color;
-                    
                     ctx.beginPath();
                     ctx.arc(ball.x, ball.y, radius, 0, Math.PI * 2, false);
                     ctx.closePath();
@@ -136,8 +162,22 @@
                     ctx.fillText(`player ${i}`,ball.x-radius-7, ball.y-radius);
                     ctx.closePath();
                 }
-                
 
+                let curPlayer = ballMap[myId];
+                
+                if (rightPressed){
+                    curPlayer.x += playerSpeed;
+                }
+                if (leftPressed ){
+                    curPlayer.x -= playerSpeed;
+                }
+                if(upPressed ){
+                    curPlayer.y -= playerSpeed;
+                }
+                if(downPressed ){
+                    curPlayer.y += playerSpeed;
+                }
+                sendData();
             }
 
         function update() {
@@ -146,7 +186,7 @@
 
         }
         
-        setInterval(update, 100);
+        setInterval(update, 10);
 
     </script>
 
