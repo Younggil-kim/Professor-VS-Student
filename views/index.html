@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professor VS Student</title>
+    <style>
+        * {padding : 0; margin: 0;}
+        canvas {background: #eee; display: block; margin : 0 auto;}
+    </style>
+    
+    <script src="/socket.io/socket.io.js"></script>
+
+</head>
+<body>
+    <canvas id = "myCanvas" width ="1024" height = "768"></canvas>
+    <script>
+
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+        var radius = 16
+
+        function PlayerBall(id){
+            this.id = id;
+            this. color = "#FF00FF";
+            this.x = 1024/2;
+            this.y = 768/2;
+        }
+
+        var balls  = [];
+        var ballMap = {};
+        var myId;
+
+        function joinUser(id,color,x,y){
+            let ball = new PlayerBall(id);
+            ball.color = color;
+            ball.x = x;
+            ball.y = y;
+
+            balls.push(ball);
+            ballMap[id] = ball;
+
+            return ball;
+        }
+
+        function leaveUser(id){
+            for(var i = 0 ; i < balls.length; i++){
+                if(balls[i].id == id){
+                    balls.splice(i,1);
+                    break;
+                }
+            }
+
+            delete ballMap[id];
+        }
+
+        function updateState(id,x,y){
+            let ball = ballMap[id];
+
+            if(!ball){
+                return;
+            }
+
+            ball.x = x;
+            ball.y = y;
+        }
+
+        var socket = io();
+        var lastInputNum = 0;
+        var lastStateNum = 0;
+        var stateBuffer = [];
+
+        socket.on('user_id', function(data){
+            myId = data;
+        });
+
+        socket.on('join_user', function(data){
+            joinUser(data.id, data.color, data.x, data.y);
+        })
+
+        socket.on('leave_user', function(data){
+            leaveUser(data);
+        })
+
+        socket.on('update_state', function(data){
+            let stateNum = data.state_num;
+            if(stateNum > lastStateNum){
+                lastStateNum = stateNum;
+
+                let time = new Date().getTime();
+
+                if(stateBuffer.length == 0 || stateBuffer[stateBuffer.length -1][1] < time){
+                    stateBuffer.push([data,time]);
+                    if(stateBuffer.length > 256){
+                        stateBuffer.shift();
+                    }
+                }
+                else if(stateBuffer.length > 0){
+                    stateBuffer[stateBuffer.length-1] = [data, time];
+                }
+
+                if (myId){
+                    let myBall = data[myId];
+                    if(myBall && myBall.last_input_num >= lastInputNum){
+                        updateState(myId, myBall.x, myBall.y);
+                    }
+                }
+            }
+        })
+
+        var inputMap =  {};
+        var previousUpdateTime = new Date().getTime();
+
+        function updateGame() {
+                let currentUpdateTime = new Date().getTime();
+                previousUpdateTime = currentUpdateTime;
+
+        }
+        function renderPlayer() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+
+                for (let i = 0; i < balls.length; i++) {
+                    let ball = balls[i];
+                    
+                    ctx.fillStyle = ball.color;
+                    
+                    ctx.beginPath();
+                    ctx.arc(ball.x, ball.y, radius, 0, Math.PI * 2, false);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.font = '15px Arial';
+                    ctx.fillText(`player ${i}`,ball.x-radius-7, ball.y-radius);
+                    ctx.closePath();
+                }
+                
+
+            }
+
+        function update() {
+            updateGame();
+            renderPlayer();
+
+        }
+        
+        setInterval(update, 100);
+
+    </script>
+
+</body>
+</html>
