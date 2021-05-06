@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,10 +22,6 @@
         var radius = 16
         var playerSpeed = 4
 
-        var rightPressed = false;
-        var leftPressed = false;
-        var upPressed = false;
-        var downPressed = false;
         function PlayerBall(id){
             this.id = id;
             this.color = "#FF00FF";
@@ -35,6 +32,11 @@
         var balls  = [];
         var ballMap = {};
         var myId;
+
+        var rightPressed = false;
+        var leftPressed = false;
+        var upPressed = false;
+        var downPressed = false;
 
         document.addEventListener("keydown", keyDownHandler,false);
         document.addEventListener("keyup", keyUpHandler,false);
@@ -100,7 +102,18 @@
             ball.y = y;
 
         }
-
+        function sendData() {
+            let curPlayer = ballMap[myId];
+            let data = {};
+            data = {
+                id : curPlayer.id,
+                x: curPlayer.x,
+                y: curPlayer.y,
+            };
+            if(data){
+                socket.emit("send_location", data);
+            }
+        }
         var socket = io();
 
         socket.on('user_id', function(data){
@@ -116,18 +129,7 @@
             updateState(data.id, data.x, data.y);
         })
         
-        function sendData() {
-            let curPlayer = ballMap[myId];
-            let data = {};
-            data = {
-                id : curPlayer.id,
-                x: curPlayer.x,
-                y: curPlayer.y,
-            };
-            if(data){
-                socket.emit("send_location", data);
-            }
-        }
+
 
         function renderPlayer() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
