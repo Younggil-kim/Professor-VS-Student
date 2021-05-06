@@ -16,7 +16,6 @@
 <body>
     <canvas id = "myCanvas" width ="1024" height = "768"></canvas>
     <script>
-
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
         var radius = 16
@@ -36,6 +35,7 @@
         var balls  = [];
         var ballMap = {};
         var myId;
+
         document.addEventListener("keydown", keyDownHandler,false);
         document.addEventListener("keyup", keyUpHandler,false);
 
@@ -102,26 +102,19 @@
         }
 
         var socket = io();
-        var lastInputNum = 0;
-        var lastStateNum = 0;
-        var stateBuffer = [];
 
         socket.on('user_id', function(data){
             myId = data;
         });
-
         socket.on('join_user', function(data){
             joinUser(data.id, data.color, data.x, data.y);
         })
-
         socket.on('leave_user', function(data){
             leaveUser(data);
         })
         socket.on('update_state', function(data){
-            console.log("here", data);
             updateState(data.id, data.x, data.y);
         })
-
         
         function sendData() {
             let curPlayer = ballMap[myId];
@@ -136,18 +129,9 @@
             }
         }
 
-        var inputMap =  {};
-        var previousUpdateTime = new Date().getTime();
-
-        function updateGame() {
-                let currentUpdateTime = new Date().getTime();
-                previousUpdateTime = currentUpdateTime;
-
-        }
         function renderPlayer() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-
+            
                 for (let i = 0; i < balls.length; i++) {
                     let ball = balls[i];
                     
@@ -181,9 +165,7 @@
             }
 
         function update() {
-            updateGame();
             renderPlayer();
-
         }
         
         setInterval(update, 10);
