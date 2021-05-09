@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div>
+        <button id="my_btn" onclick="movepage()";>start</button>
+    </div>
+    <script>
+        var socket = io();
+        function handleButton(){
+            console.log("hello")
+            document.getElementById("my_btn").click();
+        }
+        function movepage(){
+            
+            socket.emit('move', 'hello');
+            location.href = '/game';
+        }
+        socket.on('move_gameroom', function(data){
+            handleButton()
+        })
+    </script>
+    Room Page
+</body>
+</html>

@@ -114,6 +114,9 @@
                 socket.emit("send_location", data);
             }
         }
+        
+
+        
         var socket = io();
 
         socket.on('user_id', function(data){
@@ -129,7 +132,37 @@
             updateState(data.id, data.x, data.y);
         })
         
+        var enemys = [];
+        var enemyRadius = 10;
+        var enemyAliveTime = 400;
+        function EnemyBall(id){
+            this.id = id;
+            this.color = "#000000";
+            this.startingX = 1024/2;
+            this.startingY = 768/2;
+            this.destinationX = 0;
+            this.destinationY = 0;
+            this.initialX = 0;
+            this.initialY = 0;
+            this.wall = 0;
+        }
 
+
+        socket.on('enemy_left', function(data){
+            let enemy = new EnemyBall()
+            enemy.startingX = data.startingX;
+            enemy.startingY = data.startingY;
+            enemy.initialX = data.startingX;
+            enemy.initialY = data.startingY;
+            //적 목적지 데이터 받아오기 해야함
+            enemy.destinationX = data.destinationX;
+            enemy.destinationY = data.destinationY;
+            enemy.wall = data.wall;
+            enemy.speedX = data.speedX;
+            enemy.speedY = data.speedY;
+            enemys.push(enemy);
+            console.log(enemys);
+        })
 
         function renderPlayer() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -149,8 +182,99 @@
                     ctx.closePath();
                 }
 
+                for (let j = 0; j < enemys.length; j++){
+                    let enemy = enemys[j];
+
+                    ctx.fillStyle = enemy.color;
+                    ctx.beginPath();
+                    ctx.arc(enemy.startingX, enemy.startingY, enemyRadius, 0, Math.PI *2, false);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // 적 위치 옮겨주는 코드
+                for ( let k = 0 ; k < enemys.length; k++){
+                    let enemy = enemys[k];
+                    if(enemy.wall == 0){//leftSide
+                        if (enemy.destinationY >= enemy.startingY){
+                            var distanceX = enemy.destinationX - enemy.initialX;
+                            var distanceY = enemy.destinationY - enemy.initialY;
+                            var speedY = distanceY/enemyAliveTime;
+                            var speedX = distanceX/enemyAliveTime;
+                            enemy.startingX += speedX;
+                            enemy.startingY += speedY;
+                        }
+                        else{
+                            var distanceX = enemy.destinationX - enemy.initialX;
+                            var distanceY = enemy.initialY - enemy.destinationY;
+                            var speedY = distanceY/enemyAliveTime;
+                            var speedX = distanceX/enemyAliveTime;
+                            enemy.startingX += speedX;
+                            enemy.startingY -= speedY;
+                        }
+                    }
+                    else if (enemy.wall == 1){
+                        if (enemy.destinationY >= enemy.startingY){
+                            var distanceX = Math.abs(enemy.destinationX - enemy.initialX);
+                            var distanceY = Math.abs(enemy.destinationY - enemy.initialY);
+                            var speedY = distanceY/enemyAliveTime;
+                            var speedX = distanceX/enemyAliveTime;
+                            enemy.startingX -= speedX;
+                            enemy.startingY += speedY;
+                        }
+                        else{
+                            var distanceX = Math.abs(enemy.destinationX - enemy.initialX);
+                            var distanceY = Math.abs(enemy.initialY - enemy.destinationY);
+                            var speedY = distanceY/enemyAliveTime;
+                            var speedX = distanceX/enemyAliveTime;
+                            enemy.startingX -= speedX;
+                            enemy.startingY -= speedY;
+                        }
+                    }
+                    else if (enemy.wall == 2){
+                        if (enemy.destinationX >= enemy.startingX){
+                            var distanceX = Math.abs(enemy.destinationX - enemy.initialX);
+                            var distanceY = Math.abs(enemy.destinationY - enemy.initialY);
+                            var speedY = distanceY/enemyAliveTime;
+                            var speedX = distanceX/enemyAliveTime;
+                            enemy.startingX += speedX;
+                            enemy.startingY += speedY;
+                        }
+                        else{
+                            var distanceX = Math.abs(enemy.destinationX - enemy.initialX);
+                            var distanceY = Math.abs(enemy.initialY - enemy.destinationY);
+                            var speedY = distanceY/enemyAliveTime;
+                            var speedX = distanceX/enemyAliveTime;
+                            enemy.startingX -= speedX;
+                            enemy.startingY += speedY;
+                        }
+                    }
+                    else if (enemy.wall == 3){
+                        if (enemy.destinationX >= enemy.startingX){
+                            var distanceX = Math.abs(enemy.destinationX - enemy.initialX);
+                            var distanceY = Math.abs(enemy.destinationY - enemy.initialY);
+                            var speedY = distanceY/enemyAliveTime;
+                            var speedX = distanceX/enemyAliveTime;
+                            enemy.startingX += speedX;
+                            enemy.startingY -= speedY;
+                        }
+                        else{
+                            var distanceX = Math.abs(enemy.destinationX - enemy.initialX);
+                            var distanceY = Math.abs(enemy.initialY - enemy.destinationY);
+                            var speedY = distanceY/enemyAliveTime;
+                            var speedX = distanceX/enemyAliveTime;
+                            enemy.startingX -= speedX;
+                            enemy.startingY -= speedY;
+                        }
+                    }
+                    
+                    if (enemy.startingX < -100 || enemy.startingX > 1400 || enemy.startingY < -100 || enemy.startingY > 1000){
+                        enemys.splice(k,1);
+                    }
+                }
+
+                // 플레이어 옮겨주는 코드
                 let curPlayer = ballMap[myId];
-                
                 if (rightPressed){
                     curPlayer.x += playerSpeed;
                 }
@@ -163,6 +287,8 @@
                 if(downPressed ){
                     curPlayer.y += playerSpeed;
                 }
+
+
                 sendData();
             }
 
