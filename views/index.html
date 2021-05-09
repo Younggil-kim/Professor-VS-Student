@@ -176,7 +176,7 @@
         }
 
 
-        socket.on('enemy_left', function(data){
+        socket.on('enemy_generator', function(data){
             let enemy = new EnemyBall()
             enemy.startingX = data.startingX;
             enemy.startingY = data.startingY;
@@ -333,7 +333,7 @@
 
         function start(){
             isStart = true;
-            socket.emit('start', {isStart: true});
+            socket.emit('start', { id: myId});
         }
 
         socket.on('start_game', function(){
