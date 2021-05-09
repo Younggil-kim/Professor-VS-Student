@@ -17,24 +17,6 @@ app.get('/', (req, res) => {
 
 })
 
-// app.get('/', (req, res) => {
-//     res.sendFile(__dirname + '/views/room.html')
-
-// })
-
-//index.html파일을 읽어오는 코드
-// function handler (req, res) {
-//     fs.readFile(__dirname + '/views/index.html', function( err, data) {
-//         if(err){
-//             res.writeHead(500);
-//             return res.end('Error loading index.html');
-//         }
-//         res.writeHead(200);
-//         res.end(data);
-//     });
-// }
-
-//플레이어 색상 랜덤값으로 지정
 function getPlayerColor(){
     return "#" + Math.floor(Math.random() * 16777215).toString(16);
 }
@@ -45,10 +27,6 @@ const canvasHeight = 768;
 const startX = canvasWidth/2;
 const startY = canvasHeight/2;
 
-var enemyStartX = 0;
-var enemyStartY = 0;
-var enemyDestinationX = 0;
-var enemyDestinationY = 0;
 var enemyRadius = 10;
 
 class PlayerBall{
@@ -57,25 +35,14 @@ class PlayerBall{
         this.x = startX;
         this.y = startY;
         this.color = getPlayerColor();
+        this.state = 1;
     }
 
     get id() {
         return this.socket.id;
     }
 }
-// var enemyStartX = enemyRadius;
-// var enemyStartY = Math.floor(Math.random() * 768);
 
-var enemySpeedX = 0;
-var enemySpeedY = 0;
-var enemyAliveTime = 400;
-
-class EnemyLeftBall{
-    constructor(){
-        this.x = enemyRadius;
-        this.y = Math.floor(Math.random() * 768);
-    }
-}
 
 var balls = [];
 var ballMap = {};
@@ -99,24 +66,29 @@ function endGame(socket){
     delete ballMap[socket.id];
 }
 
-
+let enemyGenerater;
 
 
 io.on('connection', function(socket) {
     console.log(`${socket.id}님이 입장하셨습니다.`);
+
+
     socket.on('disconnect', function(reason){
         console.log(`${socket.id}님이 ${reason}의 이유로 퇴장하셨습니다. `)
         endGame(socket);
         io.sockets.emit('leave_user', socket.id);
+        if(balls.length == 0){
+            clearInterval(enemyGenerater)
+        }
     });
+    let isStart = false;
 
-    // socket.on('move', function(){
-    //     socket.broadcast.emit('move_gameroom');
-    // })
 
     let newBall = joinGame(socket);
+
     socket.emit('user_id', socket.id);
     // 이미 있는 유저들의 데이터 보내기
+
     for (var i = 0 ; i < balls.length; i++){
         let ball = balls[i];
         socket.emit('join_user', {
@@ -143,61 +115,76 @@ io.on('connection', function(socket) {
                 y: data.y,
             })
     })
+    let host = balls[0].id;
+
+    socket.on('start', function(data){
+        isStart = data.isStart;
+        if(socket.id == host){
+            enemyGenerater = setInterval(function() {
+                if(balls.length){
+                    //5초정도 있다가 시작하게 바꾸기. 
+                    var decideWall = Math.floor(Math.random()*4);
+                    if( decideWall == 0){
+                        var randomStartY = Math.floor(Math.random() * 768)
+                        var randomdetiY = Math.floor(Math.random() * 768)
+                        io.sockets.emit('enemy_left', {
+                            wall : 0,
+                            startingX:  enemyRadius,
+                            startingY:  randomStartY,
+                            destinationX:  canvasWidth+enemyRadius,
+                            destinationY: randomdetiY,
+                        })
+                    }
+                    else if( decideWall == 1){
+                        var randomStartY = Math.floor(Math.random() * 768)
+                        var randomdetiY = Math.floor(Math.random() * 768)
+                        io.sockets.emit('enemy_left', {
+                            wall : 1,
+                            startingX:  canvasWidth+enemyRadius,
+                            startingY:  randomStartY,
+                            destinationX:  enemyRadius,
+                            destinationY: randomdetiY,
+                        })
+                    }
+                    else if( decideWall == 2){
+                        var randomStartX = Math.floor(Math.random() * 1024);
+                        var randomdetiX = Math.floor(Math.random() * 1024);
+                        io.sockets.emit('enemy_left', {
+                            wall : 2,
+                            startingX:  randomStartX,
+                            startingY:  enemyRadius,
+                            destinationX:  randomdetiX,
+                            destinationY: canvasHeight+enemyRadius,
+                        })
+                    }
+                    else if( decideWall == 3){
+                        var randomStartX = Math.floor(Math.random() * 1024);
+                        var randomdetiX = Math.floor(Math.random() * 1024);
+                        io.sockets.emit('enemy_left', {
+                            wall : 3,
+                            startingX:  randomStartX,
+                            startingY:  canvasHeight+enemyRadius,
+                            destinationX:  randomdetiX,
+                            destinationY: enemyRadius,
+                        })
+                    }
+                }
+                }, 1000)
+
+        }
+        
+    })
 
 
-    setInterval(function() {
-        if(balls.length){
-            //5초정도 있다가 시작하게 바꾸기. 
-            let host = balls[0].id;
-            var decideWall = Math.floor(Math.random()*4);
-            if( decideWall == 0){
-                var randomStartY = Math.floor(Math.random() * 768)
-                var randomdetiY = Math.floor(Math.random() * 768)
-                io.sockets.emit('enemy_left', {
-                    wall : 0,
-                    startingX:  enemyRadius,
-                    startingY:  randomStartY,
-                    destinationX:  canvasWidth+enemyRadius,
-                    destinationY: randomdetiY,
-                })
+    socket.on('collision_detect', function(data){
+        for( var i = 0 ; i < balls.length; i++){
+            if(balls[i].id == data.id){
+                balls[i].state = 0;
+                break;
             }
-            else if( decideWall == 1){
-                var randomStartY = Math.floor(Math.random() * 768)
-                var randomdetiY = Math.floor(Math.random() * 768)
-                io.sockets.emit('enemy_left', {
-                    wall : 1,
-                    startingX:  canvasWidth+enemyRadius,
-                    startingY:  randomStartY,
-                    destinationX:  enemyRadius,
-                    destinationY: randomdetiY,
-                })
-            }
-            else if( decideWall == 2){
-                var randomStartX = Math.floor(Math.random() * 1024);
-                var randomdetiX = Math.floor(Math.random() * 1024);
-                io.sockets.emit('enemy_left', {
-                    wall : 2,
-                    startingX:  randomStartX,
-                    startingY:  enemyRadius,
-                    destinationX:  randomdetiX,
-                    destinationY: canvasHeight+enemyRadius,
-                })
-            }
-            else if( decideWall == 3){
-                var randomStartX = Math.floor(Math.random() * 1024);
-                var randomdetiX = Math.floor(Math.random() * 1024);
-                io.sockets.emit('enemy_left', {
-                    wall : 3,
-                    startingX:  randomStartX,
-                    startingY:  canvasHeight+enemyRadius,
-                    destinationX:  randomdetiX,
-                    destinationY: enemyRadius,
-                })
-            }
-
-    }
-    }, 1000)
-
+        }
+        socket.broadcast.emit('collision_update', {id : data.id})
+    })
 
 })
 
