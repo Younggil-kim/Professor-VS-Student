@@ -132,6 +132,17 @@
                 }
             }
         }
+
+        function itemCollisionDetection(){
+            let ball = ballMap[myId]
+            for(var i=0; i<enemys.length; i++){
+                if(Math.sqrt((ball.x-enemys[i].startingX)**2+(ball.y-enemys[i].startingY)**2)<=enemyRadius+radius){
+                    ball.state=0;
+                    socket.emit('item_acquire',{id:myID});
+                    break;
+                }
+            }
+        }
         
 
         
@@ -159,11 +170,35 @@
         }
         })
 
+        socket.on('item_update',function(data){
+            for(var i=0; i<balls.length;i++){
+                if(balls[i].id == data.id){
+                    balls[i].state=2;
+                    break;
+                }
+            }
+        })
+
         
         var enemys = [];
         var enemyRadius = 10;
         var enemyAliveTime = 400;
         function EnemyBall(id){
+            this.id = id;
+            this.color = "#000000";
+            this.startingX = 1024/2;
+            this.startingY = 768/2;
+            this.destinationX = 0;
+            this.destinationY = 0;
+            this.initialX = 0;
+            this.initialY = 0;
+            this.wall = 0;
+        }
+
+        var items = [];
+        var itemRadius = 20;
+        var itemAliveTime = 400;
+        function itemBall(id){
             this.id = id;
             this.color = "#000000";
             this.startingX = 1024/2;
@@ -190,6 +225,22 @@
             enemy.speedY = data.speedY;
             enemys.push(enemy);
             console.log(enemys);
+        })
+
+        socket.on('item_generator', function(data){
+            let item = new itemBall()
+            item.startingX = data.startingX;
+            item.startingY = data.startingY;
+            item.initialX = data.startingX;
+            item.initialY = data.startingY;
+            //적 목적지 데이터 받아오기 해야함
+            item.destinationX = data.destinationX;
+            item.destinationY = data.destinationY;
+            item.wall = data.wall;
+            item.speedX = data.speedX;
+            item.speedY = data.speedY;
+            items.push(item);
+            console.log(items);
         })
 
         function renderGame() {
@@ -221,6 +272,17 @@
                     ctx.closePath();
                     ctx.fill();
                 }
+
+                for(let j=0; j<items.length;j++){
+                    let item=items[j];
+
+                    ctx.fillStyle = item.color;
+                    ctx.beginPath();
+                    ctx.arc(item.startingX, item.startingY, itemRadius, 0, Math.PI *2, false);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
 
                 // 적 위치 옮겨주는 코드
                 for ( let k = 0 ; k < enemys.length; k++){
@@ -302,6 +364,92 @@
                         enemys.splice(k,1);
                     }
                 }
+
+
+                // 아이템 위치 옮겨주는 코드
+                for ( let k = 0 ; k < items.length; k++){
+                    let item = items[k];
+                    if(item.wall == 0){//leftSide
+                        if (item.destinationY >= item.startingY){
+                            var distanceX = item.destinationX - item.initialX;
+                            var distanceY = item.destinationY - item.initialY;
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX += speedX;
+                            item.startingY += speedY;
+                        }
+                        else{
+                            var distanceX = item.destinationX - item.initialX;
+                            var distanceY = item.initialY - item.destinationY;
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX += speedX;
+                            item.startingY -= speedY;
+                        }
+                    }
+                    else if (item.wall == 1){
+                        if (item.destinationY >= item.startingY){
+                            var distanceX = Math.abs(item.destinationX - item.initialX);
+                            var distanceY = Math.abs(item.destinationY - item.initialY);
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX -= speedX;
+                            item.startingY += speedY;
+                        }
+                        else{
+                            var distanceX = Math.abs(item.destinationX - item.initialX);
+                            var distanceY = Math.abs(item.initialY - item.destinationY);
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX -= speedX;
+                            item.startingY -= speedY;
+                        }
+                    }
+                    else if (item.wall == 2){
+                        if (item.destinationX >= item.startingX){
+                            var distanceX = Math.abs(item.destinationX - item.initialX);
+                            var distanceY = Math.abs(item.destinationY - item.initialY);
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX += speedX;
+                            item.startingY += speedY;
+                        }
+                        else{
+                            var distanceX = Math.abs(item.destinationX - item.initialX);
+                            var distanceY = Math.abs(item.initialY - item.destinationY);
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX -= speedX;
+                            item.startingY += speedY;
+                        }
+                    }
+                    else if (item.wall == 3){
+                        if (item.destinationX >= item.startingX){
+                            var distanceX = Math.abs(item.destinationX - item.initialX);
+                            var distanceY = Math.abs(item.destinationY - item.initialY);
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX += speedX;
+                            item.startingY -= speedY;
+                        }
+                        else{
+                            var distanceX = Math.abs(item.destinationX - item.initialX);
+                            var distanceY = Math.abs(item.initialY - item.destinationY);
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX -= speedX;
+                            item.startingY -= speedY;
+                        }
+                    }
+                    
+                    if (enemy.startingX < -100 || enemy.startingX > 1400 || enemy.startingY < -100 || enemy.startingY > 1400){
+                        enemys.splice(k,1);
+                    }
+                }
+
+
+
+
 
                 // 플레이어 옮겨주는 코드
                 let curPlayer = ballMap[myId];

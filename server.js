@@ -74,6 +74,7 @@ io.on('connection', function(socket) {
         io.sockets.emit('leave_user', socket.id);
         if(balls.length == 0){
             clearInterval(enemyGenerator)
+            clearInterval(itemGenerator)
         }
     });
 
@@ -163,7 +164,6 @@ io.on('connection', function(socket) {
         
     })
 
-
     socket.on('collision_detect', function(data){
         for( var i = 0 ; i < balls.length; i++){
             if(balls[i].id == data.id){
@@ -173,6 +173,80 @@ io.on('connection', function(socket) {
         }
         socket.broadcast.emit('collision_update', {id : data.id})
     })
+
+    const itemRadius=20;
+
+    
+    socket.on('start', function(data){
+        if(host==data.id){
+            itemGenerator = setInterval(function(){
+                if(balls.length){
+                    var decideWall = Math.floor(Math.random()*4);
+                    if(decideWall == 0){
+                        var randomStartY = Math.floor(Math.random()*76)
+
+                        var randomDestinationY=Math.floor(Math.random())
+
+                        io.socket.emit('item_generator' , {
+                            wall:0,
+                            startingX:itemRadius,
+                            startingX:randomStartX,
+                            startingY:randomStartY,
+                            destinationX: canvasWidth+itemRadius,
+                            destinationY:randomDestinationY,
+                    
+                        })
+
+                    }
+                    else if( decideWall == 1){
+                        var randomStartY = Math.floor(Math.random() * 768)
+                        var randomDestinationY = Math.floor(Math.random() * 768)
+                        io.sockets.emit('item_generator', {
+                            wall : 1,
+                            startingX:  canvasWidth+itemRadius,
+                            startingY:  randomStartY,
+                            destinationX:  itemRadius,
+                            destinationY: randomDestinationY,
+                        })
+                    }
+                    else if( decideWall == 2){
+                        var randomStartX = Math.floor(Math.random() * 1024);
+                        var randomDestinationX = Math.floor(Math.random() * 1024);
+                        io.sockets.emit('item_generator', {
+                            wall : 2,
+                            startingX:  randomStartX,
+                            startingY:  itemRadius,
+                            destinationX:  randomDestinationX,
+                            destinationY: canvasHeight+itemRadius,
+                        })
+                    }
+                    else if( decideWall == 3){
+                        var randomStartX = Math.floor(Math.random() * 1024);
+                        var randomDestinationX = Math.floor(Math.random() * 1024);
+                        io.sockets.emit('item_generator', {
+                            wall : 3,
+                            startingX:  randomStartX,
+                            startingY:  canvasHeight+itemRadius,
+                            destinationX:  randomDestinationX,
+                            destinationY: itemRadius,
+                        })
+                    }
+                }
+                }, 4000)
+                    
+                    } 
+                })
+
+    socket.on('item_acquire', function(data){
+        for(var i =0; i<balls.length; i++){
+            if(balls[i].id==data.id){
+                balls[i].state=2;
+                break;
+            }
+        }
+        socket.broadcast.emit('item_update',{id: data})
+    })
+                
 
 })
 
