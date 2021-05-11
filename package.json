@@ -8,7 +8,7 @@
     "start": "node server.js",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "build": "webpack"
+    "build": "node scripts/build.js"
   },
   "author": "",
   "license": "ISC",
