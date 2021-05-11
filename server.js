@@ -4,7 +4,7 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
 
-server.listen(8000, () => {
+server.listen(process.env.PORT || 8000, () => {
     console.log("서버가 대기중입니다.");
 })
 
