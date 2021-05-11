@@ -6,9 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
+    "build": "webpack",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
-    "build": "node scripts/build.js"
+    "deploy": "gh-pages -d build"
   },
   "author": "",
   "license": "ISC",
@@ -17,5 +17,8 @@
     "gh-pages": "^3.1.0",
     "socket.io": "^4.0.1"
   },
-  "homepage" : "https://Younggil-kim.github.io/MediaSoftwareEngineering/"
+  "homepage": "https://Younggil-kim.github.io/MediaSoftwareEngineering/",
+  "devDependencies": {
+    "webpack": "^5.37.0"
+  }
 }
