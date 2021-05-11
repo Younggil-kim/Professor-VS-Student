@@ -113,7 +113,7 @@
             let curPlayer = ballMap[myId];
             let data = {};
             data = {
-                id : curPlayer.id,
+                id: myId,
                 x: curPlayer.x,
                 y: curPlayer.y,
             };
@@ -317,8 +317,9 @@
                 if(downPressed ){
                     curPlayer.y += playerSpeed;
                 }
-
-                sendData();
+                if(balls.length>0){
+                    sendData();
+                }
             }
         
         var isStart = false;
