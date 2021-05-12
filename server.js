@@ -68,6 +68,8 @@ let stage = 2;
 let isAccessFail = false;
 let enemyGeneratorInterval;
 let enemyFrequency = 800;
+let itemGeneratorInterval;
+let itemFrequency = 15000;
 
 io.on('connection', function(socket) {
     console.log(`${socket.id}님이 입장하셨습니다.`);
@@ -79,7 +81,9 @@ io.on('connection', function(socket) {
         if(balls.length == 0){
             clearInterval(enemyGeneratorInterval);
             clearInterval(stageGenerator);
+            clearInterval(itemGeneratorInterval);
             stage = 2;
+            timer = 10;
             isAccessFail = false;
         }
     });
@@ -190,9 +194,13 @@ io.on('connection', function(socket) {
     socket.on('start', function(data){
         if(host == data.id){
             enemyGenerator();
+            itemGenerator();
             stageStart();
+            io.sockets.emit('start_game');
         }
+
     })
+
 
 
     socket.on('collision_detect', function(data){
@@ -209,6 +217,82 @@ io.on('connection', function(socket) {
         }
     })
 
+    const itemRadius=20;
+
+    function itemLeftSideGenerator(){
+        if(balls.length){
+            var randomStartY = Math.floor(Math.random() * 768)
+            var randomDestinationY = Math.floor(Math.random() * 768)
+            io.sockets.emit('item_generator', {
+                wall: 0,
+                startingX: itemRadius,
+                startingY: randomStartY,
+                destinationX: canvasWidth+itemRadius,
+                destinationY: randomDestinationY
+            })
+        }
+    }
+
+    function itemRightSideGenerator(){
+        if(balls.length){
+            var randomStartY = Math.floor(Math.random() * 768)
+            var randomDestinationY = Math.floor(Math.random() * 768)
+            io.sockets.emit('item_generator', {
+                wall: 1,
+                startingX: canvasWidth+itemRadius,
+                startingY: randomStartY,
+                destinationX: itemRadius,
+                destinationY: randomDestinationY
+            })
+        }
+    }
+
+    function itemUpSideGenerator(){
+        if(balls.length){
+            var randomStartX = Math.floor(Math.random() * 1024)
+            var randomDestinationX = Math.floor(Math.random() * 1024)
+            io.sockets.emit('item_generator', {
+                wall: 2,
+                startingX: randomStartX,
+                startingY: itemRadius,
+                destinationX: randomDestinationX,
+                destinationY: canvasHeight+itemRadius
+            })
+        }
+    }
+
+    function itemDownSideGenerator(){
+        if(balls.length){
+            var randomStartX = Math.floor(Math.random() * 1024)
+            var randomDestinationX = Math.floor(Math.random() * 1024)
+            io.sockets.emit('item_generator', {
+                wall: 3,
+                startingX: randomStartX,
+                startingY: canvasHeight+itemRadius,
+                destinationX: randomDestinationX,
+                destinationY: itemRadius
+            })
+        }
+    }
+
+    function itemGenerator(){
+        itemGeneratorInterval = setInterval(function(){
+            k = Math.floor(Math.random)*4
+            if(k == 0){
+                itemLeftSideGenerator();
+            }
+            else if(k == 1){
+                itemRightSideGenerator();
+            }
+            else if(k==2){
+                itemUpSideGenerator();
+            }
+            else{
+                itemDownSideGenerator();
+            }
+            
+        }, itemFrequency);
+    }
 
     function stageClear(){
         stage = stage + 1;
@@ -244,4 +328,3 @@ io.on('connection', function(socket) {
         return isFail;
     }
 })
-

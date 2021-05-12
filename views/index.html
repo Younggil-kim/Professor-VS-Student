@@ -175,6 +175,22 @@
             this.wall = 0;
         }
 
+
+        var items = [];
+        var itemRadius = 20;
+        var itemAliveTime = 1000;
+        function itemBall(id){
+            this.id = id;
+            this.color = "#6f4e37";
+            this.startingX = 1024/2;
+            this.startingY = 768/2;
+            this.destinationX = 0;
+            this.destinationY = 0;
+            this.initialX = 0;
+            this.initialY = 0;
+            this.wall = 0;
+        }
+
         socket.on('force_disconnect', function(data){
             alert("현재 방에 3명 이상이거나 게임중 입니다.")
             window.close();
@@ -195,6 +211,22 @@
             console.log(enemys);
         })
 
+
+        socket.on('item_generator', function(data){
+            let item = new itemBall()
+            item.startingX = data.startingX;
+            item.startingY = data.startingY;
+            item.initialX = data.startingX;
+            item.initialY = data.startingY;
+            //적 목적지 데이터 받아오기 해야함
+            item.destinationX = data.destinationX;
+            item.destinationY = data.destinationY;
+            item.wall = data.wall;
+            // item.speedX = data.speedX;
+            // item.speedY = data.speedY;
+            items.push(item);
+            console.log(items);
+        })
 
         let stage = 1;
         //스테이지 넘버
@@ -354,6 +386,98 @@
                 }
         }
 
+
+        
+        function renderItems(){
+            for (let j = 0; j < items.length; j++){
+                    let item = items[j];
+                    ctx.beginPath();
+                    ctx.fillStyle = item.color;
+                    ctx.arc(item.startingX, item.startingY, itemRadius, 0, Math.PI *2, false);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                for ( let k = 0 ; k < items.length; k++){
+                    let item = items[k];
+                    if(item.wall == 0){//leftSide
+                        if (item.destinationY >= item.startingY){
+                            var distanceX = item.destinationX - item.initialX;
+                            var distanceY = item.destinationY - item.initialY;
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX += speedX;
+                            item.startingY += speedY;
+                        }
+                        else{
+                            var distanceX = item.destinationX - item.initialX;
+                            var distanceY = item.initialY - item.destinationY;
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX += speedX;
+                            item.startingY -= speedY;
+                        }
+                    }
+                    else if (item.wall == 1){
+                        if (item.destinationY >= item.startingY){
+                            var distanceX = Math.abs(item.destinationX - item.initialX);
+                            var distanceY = Math.abs(item.destinationY - item.initialY);
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX -= speedX;
+                            item.startingY += speedY;
+                        }
+                        else{
+                            var distanceX = Math.abs(item.destinationX - item.initialX);
+                            var distanceY = Math.abs(item.initialY - item.destinationY);
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX -= speedX;
+                            item.startingY -= speedY;
+                        }
+                    }
+                    else if (item.wall == 2){
+                        if (item.destinationX >= item.startingX){
+                            var distanceX = Math.abs(item.destinationX - item.initialX);
+                            var distanceY = Math.abs(item.destinationY - item.initialY);
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX += speedX;
+                            item.startingY += speedY;
+                        }
+                        else{
+                            var distanceX = Math.abs(item.destinationX - item.initialX);
+                            var distanceY = Math.abs(item.initialY - item.destinationY);
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX -= speedX;
+                            item.startingY += speedY;
+                        }
+                    }
+                    else if (item.wall == 3){
+                        if (item.destinationX >= item.startingX){
+                            var distanceX = Math.abs(item.destinationX - item.initialX);
+                            var distanceY = Math.abs(item.destinationY - item.initialY);
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX += speedX;
+                            item.startingY -= speedY;
+                        }
+                        else{
+                            var distanceX = Math.abs(item.destinationX - item.initialX);
+                            var distanceY = Math.abs(item.initialY - item.destinationY);
+                            var speedY = distanceY/itemAliveTime;
+                            var speedX = distanceX/itemAliveTime;
+                            item.startingX -= speedX;
+                            item.startingY -= speedY;
+                        }
+                    }
+                    
+                    if (item.startingX < -100 || item.startingX > 1400 || item.startingY < -100 || item.startingY > 1400){
+                        items.splice(k,1);
+                    }
+                }
+        }
+
         let timer = 10.00;
         function renderTimer(){
             ctx.beginPath();
@@ -371,6 +495,8 @@
 
                 renderPlayers();
                 renderEnemys();
+                renderItems();
+                renderTimer();
                 if(balls.length){
                     sendData();
                 }
@@ -392,7 +518,6 @@
         setInterval(update, 10);
 
         function start(){
-            isStart = true;
             socket.emit('start', { id: myId});
         }
 
