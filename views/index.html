@@ -162,7 +162,7 @@
         
         var enemys = [];
         var enemyRadius = 10;
-        var enemyAliveTime = 400;
+        var enemyAliveTime = 300;
         function EnemyBall(id){
             this.id = id;
             this.color = "#000000";
@@ -175,33 +175,58 @@
             this.wall = 0;
         }
 
-
+        socket.on('force_disconnect', function(data){
+            alert("현재 방에 3명 이상이거나 게임중 입니다.")
+            window.close();
+            self.close();
+            window.opener = window.location.href; self.close();
+            window.open('about:blank', '_self').close();   
+        })
         socket.on('enemy_generator', function(data){
             let enemy = new EnemyBall()
             enemy.startingX = data.startingX;
             enemy.startingY = data.startingY;
             enemy.initialX = data.startingX;
             enemy.initialY = data.startingY;
-            //적 목적지 데이터 받아오기 해야함
             enemy.destinationX = data.destinationX;
             enemy.destinationY = data.destinationY;
             enemy.wall = data.wall;
-            enemy.speedX = data.speedX;
-            enemy.speedY = data.speedY;
             enemys.push(enemy);
             console.log(enemys);
         })
 
-        function renderGame() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                collisionDetection();
-                for (let i = 0; i < balls.length; i++) {
+
+        let stage = 1;
+        //스테이지 넘버
+        socket.on('stage_number', function(data){
+            stage = data.stage;
+            console.log(stage)
+        })
+
+
+        socket.on('game_over', function(data){
+            if (data.isFail){
+                alert("Fail ::: Game Over :::: Your Grade is FFFFFFF");
+                window.open('about:blank', '_self');
+            }
+        })
+
+        function renderStage(){
+            ctx.beginPath();
+            ctx.fillStyle = '#000000';
+            ctx.font = '30px Arial';
+            ctx.fillText(`스테이지 ${stage}`,30,30);
+            ctx.closePath();
+        }
+
+        function renderPlayers(){
+            for (let i = 0; i < balls.length; i++) {
                     let ball = balls[i];
                     if (ball.state == 0){
                         continue
                     }
-                    ctx.fillStyle = ball.color;
                     ctx.beginPath();
+                    ctx.fillStyle = ball.color;
                     ctx.arc(ball.x, ball.y, radius, 0, Math.PI * 2, false);
                     ctx.closePath();
                     ctx.fill();
@@ -211,18 +236,38 @@
                     ctx.fillText(`player ${i}`,ball.x-radius-7, ball.y-radius);
                     ctx.closePath();
                 }
+                let curPlayer = ballMap[myId];
+                if (rightPressed){
+                    if (curPlayer.x <= 1024 - radius){
+                        curPlayer.x += playerSpeed;
+                    }
+                }
+                if (leftPressed ){
+                    if(curPlayer.x >= 0 + radius){
+                        curPlayer.x -= playerSpeed;
+                    }
+                }
+                if(upPressed ){
+                    if(curPlayer.y >= 0 + radius){
+                        curPlayer.y -= playerSpeed;
+                    }
+                }
+                if(downPressed ){
+                    if(curPlayer.y <= 768 - radius){
+                        curPlayer.y += playerSpeed;
+                    }
+                }
+        }
 
-                for (let j = 0; j < enemys.length; j++){
+        function renderEnemys(){
+            for (let j = 0; j < enemys.length; j++){
                     let enemy = enemys[j];
-
-                    ctx.fillStyle = enemy.color;
                     ctx.beginPath();
+                    ctx.fillStyle = enemy.color;
                     ctx.arc(enemy.startingX, enemy.startingY, enemyRadius, 0, Math.PI *2, false);
                     ctx.closePath();
                     ctx.fill();
                 }
-
-                // 적 위치 옮겨주는 코드
                 for ( let k = 0 ; k < enemys.length; k++){
                     let enemy = enemys[k];
                     if(enemy.wall == 0){//leftSide
@@ -302,22 +347,16 @@
                         enemys.splice(k,1);
                     }
                 }
+        }
 
-                // 플레이어 옮겨주는 코드
-                let curPlayer = ballMap[myId];
-                if (rightPressed){
-                    curPlayer.x += playerSpeed;
-                }
-                if (leftPressed ){
-                    curPlayer.x -= playerSpeed;
-                }
-                if(upPressed ){
-                    curPlayer.y -= playerSpeed;
-                }
-                if(downPressed ){
-                    curPlayer.y += playerSpeed;
-                }
-                if(balls.length>0){
+
+        function renderGame() {            
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                collisionDetection();
+                renderStage();
+                renderPlayers();
+                renderEnemys();
+                if(balls.length){
                     sendData();
                 }
             }
@@ -326,11 +365,10 @@
       
         function update() {
             renderGame();
+   
         }
-
         setInterval(update, 10);
-
-
+        renderStage();
 
         function start(){
             isStart = true;
@@ -340,6 +378,8 @@
         socket.on('start_game', function(){
             isStart = true;
         })
+
+
     </script>
     <script>
 

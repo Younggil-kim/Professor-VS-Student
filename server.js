@@ -62,8 +62,12 @@ function endGame(socket){
     delete ballMap[socket.id];
 }
 
-let enemyGenerator;
 
+let stageGenerator;
+let stage = 2;
+let isAccessFail = false;
+let enemyGeneratorInterval;
+let enemyFrequency = 1000;
 
 io.on('connection', function(socket) {
     console.log(`${socket.id}님이 입장하셨습니다.`);
@@ -73,10 +77,15 @@ io.on('connection', function(socket) {
         endGame(socket);
         io.sockets.emit('leave_user', socket.id);
         if(balls.length == 0){
-            clearInterval(enemyGenerator)
+            clearInterval(enemyGeneratorInterval);
+            clearInterval(stageGenerator);
+            stage = 2;
+            isAccessFail = false;
         }
     });
 
+
+    
     let newBall = joinGame(socket);
 
     socket.emit('user_id', socket.id);
@@ -98,6 +107,14 @@ io.on('connection', function(socket) {
         color: newBall.color,
     });
 
+    if(balls.length > 3 || isAccessFail){
+        console.log(socket.id)
+        socket.emit('force_disconnect', socket.id);
+        endGame(socket);
+        io.sockets.emit('leave_user', socket.id);
+        socket.disconnect(false);
+    }
+
     socket.on('send_location', function(data) {
             socket.broadcast.emit('update_state', {
                 id: data.id,
@@ -106,61 +123,73 @@ io.on('connection', function(socket) {
             })
     })
 
+    function enemyLeftSideGenerator(){
+            if(balls.length){
+                var randomStartY = Math.floor(Math.random() * 768)
+                var randomDestinationY = Math.floor(Math.random() * 768)
+                io.sockets.emit('enemy_generator', {
+                    wall : 0,
+                    startingX:  enemyRadius,
+                    startingY:  randomStartY,
+                    destinationX:  canvasWidth+enemyRadius,
+                    destinationY: randomDestinationY,
+                })
+            }
+    }
+    function enemyRightSideGenerator(){
+            if(balls.length){
+                var randomStartY = Math.floor(Math.random() * 768)
+                var randomDestinationY = Math.floor(Math.random() * 768)
+                io.sockets.emit('enemy_generator', {
+                    wall : 1,
+                    startingX:  canvasWidth+enemyRadius,
+                    startingY:  randomStartY,
+                    destinationX:  enemyRadius,
+                    destinationY: randomDestinationY,
+                })
+            }
+    }
+    function enemyUpSideGenerator(){
+            if(balls.length){
+                var randomStartX = Math.floor(Math.random() * 1024);
+                var randomDestinationX = Math.floor(Math.random() * 1024);
+                io.sockets.emit('enemy_generator', {
+                    wall : 2,
+                    startingX:  randomStartX,
+                    startingY:  enemyRadius,
+                    destinationX:  randomDestinationX,
+                    destinationY: canvasHeight+enemyRadius,
+                })
+            }
+    }
+    function enemyDownSideGenerator(){
+            if(balls.length){
+                var randomStartX = Math.floor(Math.random() * 1024);
+                var randomDestinationX = Math.floor(Math.random() * 1024);
+                io.sockets.emit('enemy_generator', {
+                    wall : 3,
+                    startingX:  randomStartX,
+                    startingY:  canvasHeight+enemyRadius,
+                    destinationX:  randomDestinationX,
+                    destinationY: enemyRadius,
+                })
+            }
+    }
+
+    function enemyGenerator(){
+        enemyGeneratorInterval = setInterval(function (){
+            enemyLeftSideGenerator();
+            enemyRightSideGenerator();
+            enemyUpSideGenerator();
+            enemyDownSideGenerator();
+        }, enemyFrequency);
+    }
     let host = balls[0].id;
     socket.on('start', function(data){
         if(host == data.id){
-            enemyGenerator = setInterval(function() {
-                if(balls.length){ 
-                    var decideWall = Math.floor(Math.random()*4);
-                    if( decideWall == 0){
-                        var randomStartY = Math.floor(Math.random() * 768)
-                        var randomDestinationY = Math.floor(Math.random() * 768)
-                        io.sockets.emit('enemy_generator', {
-                            wall : 0,
-                            startingX:  enemyRadius,
-                            startingY:  randomStartY,
-                            destinationX:  canvasWidth+enemyRadius,
-                            destinationY: randomDestinationY,
-                        })
-                    }
-                    else if( decideWall == 1){
-                        var randomStartY = Math.floor(Math.random() * 768)
-                        var randomDestinationY = Math.floor(Math.random() * 768)
-                        io.sockets.emit('enemy_generator', {
-                            wall : 1,
-                            startingX:  canvasWidth+enemyRadius,
-                            startingY:  randomStartY,
-                            destinationX:  enemyRadius,
-                            destinationY: randomDestinationY,
-                        })
-                    }
-                    else if( decideWall == 2){
-                        var randomStartX = Math.floor(Math.random() * 1024);
-                        var randomDestinationX = Math.floor(Math.random() * 1024);
-                        io.sockets.emit('enemy_generator', {
-                            wall : 2,
-                            startingX:  randomStartX,
-                            startingY:  enemyRadius,
-                            destinationX:  randomDestinationX,
-                            destinationY: canvasHeight+enemyRadius,
-                        })
-                    }
-                    else if( decideWall == 3){
-                        var randomStartX = Math.floor(Math.random() * 1024);
-                        var randomDestinationX = Math.floor(Math.random() * 1024);
-                        io.sockets.emit('enemy_generator', {
-                            wall : 3,
-                            startingX:  randomStartX,
-                            startingY:  canvasHeight+enemyRadius,
-                            destinationX:  randomDestinationX,
-                            destinationY: enemyRadius,
-                        })
-                    }
-                }
-                }, 1000)
-
+            enemyGenerator();
+            stageStart();
         }
-        
     })
 
 
@@ -172,7 +201,42 @@ io.on('connection', function(socket) {
             }
         }
         socket.broadcast.emit('collision_update', {id : data.id})
+        isFail = stageFail();
+        if(isFail){
+            io.sockets.emit('game_over', {isFail: true})
+        }
     })
+
+
+
+
+
+    function stageClear(){
+        stage = stage + 1;
+        if (enemyFrequency > 200){
+            enemyFrequency -= 100;
+        }
+        clearInterval(enemyGeneratorInterval);
+        enemyGenerator();
+    }
+    function stageStart(){
+        stageGenerator = setInterval( 
+            function(){
+            io.sockets.emit('stage_number', {stage : stage});
+            stageClear();
+        }, 5000)
+    }
+    function stageFail(){
+        var isFail = true;
+        for(let i = 0 ; i < balls.length ; i++){
+            if(balls[i].state == 1){
+                isFail = false;
+            }
+        }
+        return isFail;
+    }
+
+
 
 })
 
