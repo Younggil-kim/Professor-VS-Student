@@ -84,6 +84,7 @@ io.on('connection', function(socket) {
             clearInterval(itemGeneratorInterval);
             stage = 2;
             timer = 10;
+            enemyFrequency = 800;
             isAccessFail = false;
         }
     });
