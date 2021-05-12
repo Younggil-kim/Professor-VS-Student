@@ -200,15 +200,20 @@
         //스테이지 넘버
         socket.on('stage_number', function(data){
             stage = data.stage;
+            timer = data.timer;
             console.log(stage)
         })
 
 
-        socket.on('game_over', function(data){
+        socket.on('game_over', function(data){//전 플레이어가 죽으면 나오는 이벤트
             if (data.isFail){
-                alert("Fail ::: Game Over :::: Your Grade is FFFFFFF");
+                alert("The professor won! ::: Game Over :::: Your Grade is F");
                 window.open('about:blank', '_self');
             }
+        })
+
+        socket.on('game_win', function(data){
+            alert("The students won! ::::  Congratulations! :::: Your Grade is A+")
         })
 
         function renderStage(){
@@ -349,26 +354,42 @@
                 }
         }
 
+        let timer = 10.00;
+        function renderTimer(){
+            ctx.beginPath();
+            ctx.fillStyle = '#000000';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Timer ${timer.toFixed(2)}`,30,50);
+            ctx.closePath();
+
+        }
 
         function renderGame() {            
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 collisionDetection();
                 renderStage();
+
                 renderPlayers();
                 renderEnemys();
                 if(balls.length){
                     sendData();
                 }
+                if(isStart){
+                    timer -= 0.010;
+                    if(parseInt(timer) <= 0){
+                        timer = 0;
+                    }
+                }
+                renderTimer();
             }
         
         var isStart = false;
       
         function update() {
             renderGame();
-   
         }
+
         setInterval(update, 10);
-        renderStage();
 
         function start(){
             isStart = true;
@@ -390,7 +411,9 @@
     <div style="text-align: center;">
         <font size="5em" color="green">
             <span>키보드 방향키를 통해 움직이세요. </span>
+            <p>Move through the Arrow key on the keyboard.</p> 
             <p>Player0가 Host입니다. Host가 시작버튼을 눌러야 게임이 시작됩니다.</p> 
+            <p>Player0 is Host. The game starts only when the Host presses the Start button. </p> 
         </font>
          
     </div>

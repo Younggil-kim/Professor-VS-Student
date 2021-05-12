@@ -67,7 +67,7 @@ let stageGenerator;
 let stage = 2;
 let isAccessFail = false;
 let enemyGeneratorInterval;
-let enemyFrequency = 1000;
+let enemyFrequency = 800;
 
 io.on('connection', function(socket) {
     console.log(`${socket.id}님이 입장하셨습니다.`);
@@ -107,7 +107,7 @@ io.on('connection', function(socket) {
         color: newBall.color,
     });
 
-    if(balls.length > 3 || isAccessFail){
+    if(balls.length > 3 || isAccessFail){//3명 이상 접속시 접속자 차단해버리기 
         console.log(socket.id)
         socket.emit('force_disconnect', socket.id);
         endGame(socket);
@@ -176,7 +176,7 @@ io.on('connection', function(socket) {
             }
     }
 
-    function enemyGenerator(){
+    function enemyGenerator(){//전 방향 벽에서 총알 생성하게 하는거
         enemyGeneratorInterval = setInterval(function (){
             enemyLeftSideGenerator();
             enemyRightSideGenerator();
@@ -184,6 +184,8 @@ io.on('connection', function(socket) {
             enemyDownSideGenerator();
         }, enemyFrequency);
     }
+
+
     let host = balls[0].id;
     socket.on('start', function(data){
         if(host == data.id){
@@ -208,9 +210,6 @@ io.on('connection', function(socket) {
     })
 
 
-
-
-
     function stageClear(){
         stage = stage + 1;
         if (enemyFrequency > 200){
@@ -219,12 +218,21 @@ io.on('connection', function(socket) {
         clearInterval(enemyGeneratorInterval);
         enemyGenerator();
     }
-    function stageStart(){
-        stageGenerator = setInterval( 
+
+
+    function stageStart(){//스테이지 시작제어, 10초당 1스테이지
+        stageGenerator = setInterval(
             function(){
-            io.sockets.emit('stage_number', {stage : stage});
-            stageClear();
-        }, 5000)
+                io.sockets.emit('stage_number', {stage : stage, timer : 10});
+                if(stage <= 8){
+                    stageClear();
+                }
+                if(stage == 9){
+                    io.sockets.emit('game_win', {isWin: true});
+                }
+            }
+        , 10000)
+
     }
     function stageFail(){
         var isFail = true;
@@ -235,8 +243,5 @@ io.on('connection', function(socket) {
         }
         return isFail;
     }
-
-
-
 })
 
