@@ -219,6 +219,11 @@ io.on('connection', function(socket) {
         }
     })
 
+    socket.on('item_detect', function(){
+        io.sockets.emit('coffee_effect', {coffee : true});
+    })
+
+
     const itemRadius=20;
 
     function itemLeftSideGenerator(){
@@ -310,12 +315,13 @@ io.on('connection', function(socket) {
         stageGenerator = setInterval(
             function(){
                 io.sockets.emit('stage_number', {stage : stage, timer : 10});
-                if(stage <= 8){
-                    stageClear();
-                }
                 if(stage == 9){
                     io.sockets.emit('game_win', {isWin: true});
                 }
+                if(stage <= 8){
+                    stageClear();
+                }
+
             }
         , 10000)
 

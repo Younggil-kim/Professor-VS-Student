@@ -133,7 +133,18 @@
             }
         }
         
+        let coffeeEffect = false;
 
+        function acquireDetection(){
+            let ball = ballMap[myId]
+            for(var i = 0; i < items.length ; i++){
+                if(  Math.sqrt((ball.x - items[i].startingX)**2 + (ball.y - items[i].startingY)**2) <= itemRadius + radius){
+                    socket.emit('item_detect');
+                    items.splice(i,1);
+                    break;
+                }
+            }
+        }
         
         var socket = io();
 
@@ -218,18 +229,18 @@
             item.startingY = data.startingY;
             item.initialX = data.startingX;
             item.initialY = data.startingY;
-            //적 목적지 데이터 받아오기 해야함
             item.destinationX = data.destinationX;
             item.destinationY = data.destinationY;
             item.wall = data.wall;
-            // item.speedX = data.speedX;
-            // item.speedY = data.speedY;
             items.push(item);
             console.log(items);
         })
 
+        socket.on('coffee_effect', function(data){
+            coffeeEffect = data.coffee;
+        })
+
         let stage = 1;
-        //스테이지 넘버
         socket.on('stage_number', function(data){
             stage = data.stage;
             timer = data.timer;
@@ -252,7 +263,7 @@
             ctx.beginPath();
             ctx.fillStyle = '#000000';
             ctx.font = '30px Arial';
-            ctx.fillText(`스테이지 ${stage}`,30,30);
+            ctx.fillText(`Stage ${stage}`,30,30);
             ctx.closePath();
         }
 
@@ -396,6 +407,12 @@
                     ctx.arc(item.startingX, item.startingY, itemRadius, 0, Math.PI *2, false);
                     ctx.closePath();
                     ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.font = '15px Arial';
+                    ctx.fillStyle = '#6f4e37';
+                    ctx.fillText(`ITEM_COFFEE`, item.startingX-itemRadius-20,item.startingY-itemRadius);
+                    ctx.closePath();
                 }
                 for ( let k = 0 ; k < items.length; k++){
                     let item = items[k];
@@ -492,11 +509,16 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 collisionDetection();
                 renderStage();
-
                 renderPlayers();
                 renderEnemys();
                 renderItems();
                 renderTimer();
+                acquireDetection();
+                if(coffeeEffect){
+                    enemys.length = 0;
+                    coffeeEffect = false;
+                }
+
                 if(balls.length){
                     sendData();
                 }
@@ -535,10 +557,10 @@
     </div>
     <div style="text-align: center;">
         <font size="5em" color="green">
-            <span>키보드 방향키를 통해 움직이세요. </span>
             <p>Move through the Arrow key on the keyboard.</p> 
-            <p>Player0가 Host입니다. Host가 시작버튼을 눌러야 게임이 시작됩니다.</p> 
             <p>Player0 is Host. The game starts only when the Host presses the Start button. </p> 
+            <p>Player0가 Host입니다. Host가 시작버튼을 눌러야 게임이 시작됩니다.</p> 
+            <span>키보드 방향키를 통해 움직이세요. </span>
         </font>
          
     </div>
