@@ -118,6 +118,7 @@ io.on('connection', function(socket) {
         endGame(socket);
         io.sockets.emit('leave_user', socket.id);
         socket.disconnect(false);
+        isAccessFail = false;
     }
 
     socket.on('send_location', function(data) {
