@@ -193,6 +193,7 @@ io.on('connection', function(socket) {
 
     let host = balls[0].id;
     socket.on('start', function(data){
+        isAccessFail= true;
         if(host == data.id){
             enemyGenerator();
             itemGenerator();
