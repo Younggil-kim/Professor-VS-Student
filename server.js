@@ -1,5 +1,6 @@
 //server.js
-const app = require('express')();
+const express = require('express');
+const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
@@ -10,8 +11,10 @@ server.listen(process.env.PORT || 8000, () => {
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/views/index.html')
-
 })
+
+app.use('/views/keyHandler', express.static(__dirname+ '/views/keyHandler.js'))
+
 
 function getPlayerColor(){
     return "#" + Math.floor(Math.random() * 16777215).toString(16);
