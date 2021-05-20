@@ -13,6 +13,7 @@
     
     <script src="/socket.io/socket.io.js"></script>
     <script src="/views/keyHandler"></script>
+    <script src="/views/gameObject"></script>
 </head>
 <body>
     <div style="text-align: center;">
@@ -26,55 +27,7 @@
 
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
-        var radius = 16
-        var playerSpeed = 4
 
-        class PlayerBall{
-            constructor(id){
-                this.id = id;
-                this.x = startX;
-                this.y = startY;
-                this.color = getPlayerColor();
-                this.state = 1;
-                this.radius = 16;
-            }
-
-            getId(){
-              return this.socket.id;
-            }
-
-            getX(){
-                return this.x;
-            }
-            setX(x){
-                this.x = x;
-            }
-            getY(){
-                return this.y;
-            }
-            setY(y){
-                this.y = y;
-            }
-
-            getState(){
-                return this.state;
-            }
-            setState(state){
-                this.state = state;
-            }
-            getRadius(){
-                return this.radius;
-            }
-        }
-
-        // function PlayerBall(id){
-        //     this.id = id;
-        //     this.color = "#FF00FF";
-        //     this.x = 1024/2;
-        //     this.y = 768/2;
-        //     this.state = 1;
-        // }
-        
         var balls  = [];
         var ballMap = {};
         var myId;
@@ -88,66 +41,60 @@
         document.addEventListener("keyup", keyUpHandler,false);
 
         function joinUser(id,color,x,y){
-            let ball = new PlayerBall(id);
-            ball.color = color;
-            ball.x = x;
-            ball.y = y;
+            let ball = new PlayerBall(id,color,x,y);
+            ball.setColor(color);
+            ball.setX(x);
+            ball.setY(y);
 
             balls.push(ball);
             ballMap[id] = ball;
 
             return ball;
         }
-
         function leaveUser(id){
             for(var i = 0 ; i < balls.length; i++){
-                if(balls[i].id == id){
+                if(balls[i].getId() == id){
                     balls.splice(i,1);
                     break;
                 }
             }
             delete ballMap[id];
         }
-
         function updateState(id,x,y){
             let ball = ballMap[id];
             if(!ball){
                 return;
             }
-            ball.x = x;
-            ball.y = y;
-
+            ball.setX(x);
+            ball.setY(y);
         }
         function sendData() {
             let curPlayer = ballMap[myId];
             let data = {};
             data = {
-                id: myId,
-                x: curPlayer.x,
-                y: curPlayer.y,
+                id: curPlayer.getId(),
+                x: curPlayer.getX(),
+                y: curPlayer.getY(),
             };
             if(data){
                 socket.emit("send_location", data);
             }
         }
-        
         function collisionDetection(){
             let ball = ballMap[myId]
             for(var i = 0; i < enemys.length ; i++){
-                if(  Math.sqrt((ball.x - enemys[i].startingX)**2 + (ball.y - enemys[i].startingY)**2) <= enemyRadius + radius){
-                    ball.state = 0;
-                    socket.emit('collision_detect', {id : myId});
+                if(  Math.sqrt((ball.getX() - enemys[i].getX())**2 + (ball.getY() - enemys[i].getY())**2) <= enemys[i].getRadius() + ball.getRadius()){
+                    ball.setState(0);
+                    socket.emit('collision_detect', {id : ball.getId()});
                     break;
                 }
             }
         }
         
-        let coffeeEffect = false;
-
         function acquireDetection(){
             let ball = ballMap[myId]
             for(var i = 0; i < items.length ; i++){
-                if(  Math.sqrt((ball.x - items[i].startingX)**2 + (ball.y - items[i].startingY)**2) <= itemRadius + radius){
+                if(  Math.sqrt((ball.getX() - items[i].getX())**2 + (ball.getY() - items[i].getY())**2) <= ball.getRadius() + items[i].getRadius()){
                     socket.emit('item_detect');
                     items.splice(i,1);
                     break;
@@ -172,8 +119,8 @@
         
         socket.on('collision_update', function(data){
             for( var i = 0 ; i < balls.length; i++){
-            if(balls[i].id == data.id){
-                balls[i].state = 0;
+            if(balls[i].getId() == data.id){
+                balls[i].setState(0);
                 break;
             }
         }
@@ -181,35 +128,9 @@
 
         
         var enemys = [];
-        var enemyRadius = 10;
-        var enemyAliveTime = 300;
-        function EnemyBall(id){
-            this.id = id;
-            this.color = "#000000";
-            this.startingX = 1024/2;
-            this.startingY = 768/2;
-            this.destinationX = 0;
-            this.destinationY = 0;
-            this.initialX = 0;
-            this.initialY = 0;
-            this.wall = 0;
-        }
-
 
         var items = [];
-        var itemRadius = 20;
-        var itemAliveTime = 1000;
-        function itemBall(id){
-            this.id = id;
-            this.color = "#6f4e37";
-            this.startingX = 1024/2;
-            this.startingY = 768/2;
-            this.destinationX = 0;
-            this.destinationY = 0;
-            this.initialX = 0;
-            this.initialY = 0;
-            this.wall = 0;
-        }
+
 
         socket.on('force_disconnect', function(data){
             alert("현재 방에 3명 이상이거나 게임중 입니다.")
@@ -219,32 +140,19 @@
             window.open('about:blank', '_self').close();   
         })
         socket.on('enemy_generator', function(data){
-            let enemy = new EnemyBall()
-            enemy.startingX = data.startingX;
-            enemy.startingY = data.startingY;
-            enemy.initialX = data.startingX;
-            enemy.initialY = data.startingY;
-            enemy.destinationX = data.destinationX;
-            enemy.destinationY = data.destinationY;
-            enemy.wall = data.wall;
+            let enemy = new EnemyBall(data.startingX, data.startingY, data.destinationX, data.destinationY, data.wall)
             enemys.push(enemy);
             console.log(enemys);
         })
 
 
         socket.on('item_generator', function(data){
-            let item = new itemBall()
-            item.startingX = data.startingX;
-            item.startingY = data.startingY;
-            item.initialX = data.startingX;
-            item.initialY = data.startingY;
-            item.destinationX = data.destinationX;
-            item.destinationY = data.destinationY;
-            item.wall = data.wall;
+            let item = new itemBall(data.startingX, data.startingY, data.destinationX, data.destinationY, data.wall)
             items.push(item);
             console.log(items);
         })
 
+        let coffeeEffect = false;
         socket.on('coffee_effect', function(data){
             coffeeEffect = data.coffee;
         })
@@ -279,39 +187,39 @@
         function renderPlayers(){
             for (let i = 0; i < balls.length; i++) {
                     let ball = balls[i];
-                    if (ball.state == 0){
+                    if (ball.getState() == 0){
                         continue
                     }
                     ctx.beginPath();
-                    ctx.fillStyle = ball.color;
-                    ctx.arc(ball.x, ball.y, radius, 0, Math.PI * 2, false);
+                    ctx.fillStyle = ball.getColor();
+                    ctx.arc(ball.getX(), ball.getY(), ball.getRadius(), 0, Math.PI * 2, false);
                     ctx.closePath();
                     ctx.fill();
                     
                     ctx.beginPath();
                     ctx.font = '15px Arial';
-                    ctx.fillText(`player ${i}`,ball.x-radius-7, ball.y-radius);
+                    ctx.fillText(`player ${i}`,ball.getX()- ball.getRadius()-7, ball.getY() - ball.getRadius());
                     ctx.closePath();
                 }
                 let curPlayer = ballMap[myId];
                 if (rightPressed){
-                    if (curPlayer.x <= 1024 - radius){
-                        curPlayer.x += playerSpeed;
+                    if (curPlayer.getX() <= 1024 - curPlayer.getRadius()){
+                        curPlayer.setX(curPlayer.getX() + curPlayer.getPlayerSpeed());
                     }
                 }
                 if (leftPressed ){
-                    if(curPlayer.x >= 0 + radius){
-                        curPlayer.x -= playerSpeed;
+                    if(curPlayer.getX() >= 0 + curPlayer.getRadius()){
+                        curPlayer.setX(curPlayer.getX() - curPlayer.getPlayerSpeed());
                     }
                 }
                 if(upPressed ){
-                    if(curPlayer.y >= 0 + radius){
-                        curPlayer.y -= playerSpeed;
+                    if(curPlayer.getY() >= 0 + curPlayer.getRadius()){
+                        curPlayer.setY(curPlayer.getY() - curPlayer.getPlayerSpeed());
                     }
                 }
                 if(downPressed ){
-                    if(curPlayer.y <= 768 - radius){
-                        curPlayer.y += playerSpeed;
+                    if(curPlayer.getY() <= 768 - curPlayer.getRadius()){
+                        curPlayer.setY(curPlayer.getY() + curPlayer.getPlayerSpeed());
                     }
                 }
         }
@@ -320,87 +228,61 @@
             for (let j = 0; j < enemys.length; j++){
                     let enemy = enemys[j];
                     ctx.beginPath();
-                    ctx.fillStyle = enemy.color;
-                    ctx.arc(enemy.startingX, enemy.startingY, enemyRadius, 0, Math.PI *2, false);
+                    ctx.fillStyle = enemy.getColor();
+                    ctx.arc(enemy.getX(), enemy.getY(), enemy.getRadius(), 0, Math.PI *2, false);
                     ctx.closePath();
                     ctx.fill();
                 }
                 for ( let k = 0 ; k < enemys.length; k++){
                     let enemy = enemys[k];
-                    if(enemy.wall == 0){//leftSide
-                        if (enemy.destinationY >= enemy.startingY){
-                            var distanceX = enemy.destinationX - enemy.initialX;
-                            var distanceY = enemy.destinationY - enemy.initialY;
-                            var speedY = distanceY/enemyAliveTime;
-                            var speedX = distanceX/enemyAliveTime;
-                            enemy.startingX += speedX;
-                            enemy.startingY += speedY;
+                    var distanceX = Math.abs(enemy.getDestinationX() - enemy.getInitialX());
+                    var distanceY = Math.abs(enemy.getDestinationY() - enemy.getInitialY());
+                    var speedY = distanceY/enemy.getAliveTime();
+                    var speedX = distanceX/enemy.getAliveTime();
+                    if(enemy.getWall() == 0){//leftSide
+                        if (enemy.getDestinationY() >= enemy.getY()){
+                            enemy.setX(enemy.getX() + speedX);
+                            enemy.setY(enemy.getY() + speedY);
                         }
                         else{
-                            var distanceX = enemy.destinationX - enemy.initialX;
-                            var distanceY = enemy.initialY - enemy.destinationY;
-                            var speedY = distanceY/enemyAliveTime;
-                            var speedX = distanceX/enemyAliveTime;
-                            enemy.startingX += speedX;
-                            enemy.startingY -= speedY;
+                            enemy.setX(enemy.getX() + speedX);
+                            enemy.setY(enemy.getY() - speedY);
                         }
                     }
-                    else if (enemy.wall == 1){
-                        if (enemy.destinationY >= enemy.startingY){
-                            var distanceX = Math.abs(enemy.destinationX - enemy.initialX);
-                            var distanceY = Math.abs(enemy.destinationY - enemy.initialY);
-                            var speedY = distanceY/enemyAliveTime;
-                            var speedX = distanceX/enemyAliveTime;
-                            enemy.startingX -= speedX;
-                            enemy.startingY += speedY;
+                    else if (enemy.getWall() == 1){
+                        if (enemy.getDestinationY() >= enemy.getY()){
+                            enemy.setX(enemy.getX() - speedX);
+                            enemy.setY(enemy.getY() + speedY);
+
                         }
                         else{
-                            var distanceX = Math.abs(enemy.destinationX - enemy.initialX);
-                            var distanceY = Math.abs(enemy.initialY - enemy.destinationY);
-                            var speedY = distanceY/enemyAliveTime;
-                            var speedX = distanceX/enemyAliveTime;
-                            enemy.startingX -= speedX;
-                            enemy.startingY -= speedY;
+                            enemy.setX(enemy.getX() - speedX);
+                            enemy.setY(enemy.getY() - speedY);
+
                         }
                     }
-                    else if (enemy.wall == 2){
-                        if (enemy.destinationX >= enemy.startingX){
-                            var distanceX = Math.abs(enemy.destinationX - enemy.initialX);
-                            var distanceY = Math.abs(enemy.destinationY - enemy.initialY);
-                            var speedY = distanceY/enemyAliveTime;
-                            var speedX = distanceX/enemyAliveTime;
-                            enemy.startingX += speedX;
-                            enemy.startingY += speedY;
+                    else if (enemy.getWall() == 2){
+                        if (enemy.getDestinationX() >= enemy.getX()){
+                            enemy.setX(enemy.getX() + speedX);
+                            enemy.setY(enemy.getY() + speedY);
                         }
                         else{
-                            var distanceX = Math.abs(enemy.destinationX - enemy.initialX);
-                            var distanceY = Math.abs(enemy.initialY - enemy.destinationY);
-                            var speedY = distanceY/enemyAliveTime;
-                            var speedX = distanceX/enemyAliveTime;
-                            enemy.startingX -= speedX;
-                            enemy.startingY += speedY;
+                            enemy.setX(enemy.getX() - speedX);
+                            enemy.setY(enemy.getY() + speedY);
                         }
                     }
-                    else if (enemy.wall == 3){
-                        if (enemy.destinationX >= enemy.startingX){
-                            var distanceX = Math.abs(enemy.destinationX - enemy.initialX);
-                            var distanceY = Math.abs(enemy.destinationY - enemy.initialY);
-                            var speedY = distanceY/enemyAliveTime;
-                            var speedX = distanceX/enemyAliveTime;
-                            enemy.startingX += speedX;
-                            enemy.startingY -= speedY;
+                    else if (enemy.getWall() == 3){
+                        if (enemy.getDestinationX() >= enemy.getX()){
+                            enemy.setX(enemy.getX() + speedX);
+                            enemy.setY(enemy.getY() - speedY);
                         }
                         else{
-                            var distanceX = Math.abs(enemy.destinationX - enemy.initialX);
-                            var distanceY = Math.abs(enemy.initialY - enemy.destinationY);
-                            var speedY = distanceY/enemyAliveTime;
-                            var speedX = distanceX/enemyAliveTime;
-                            enemy.startingX -= speedX;
-                            enemy.startingY -= speedY;
+                            enemy.setX(enemy.getX() - speedX);
+                            enemy.setY(enemy.getY() - speedY);
                         }
                     }
                     
-                    if (enemy.startingX < -100 || enemy.startingX > 1400 || enemy.startingY < -100 || enemy.startingY > 1400){
+                    if (enemy.getX() < -100 || enemy.getX() > 1400 || enemy.getY() < -100 || enemy.getY() > 1400){
                         enemys.splice(k,1);
                     }
                 }
@@ -412,93 +294,67 @@
             for (let j = 0; j < items.length; j++){
                     let item = items[j];
                     ctx.beginPath();
-                    ctx.fillStyle = item.color;
-                    ctx.arc(item.startingX, item.startingY, itemRadius, 0, Math.PI *2, false);
+                    ctx.fillStyle = item.getColor();
+                    ctx.arc(item.getX(), item.getY(), item.getRadius(), 0, Math.PI *2, false);
                     ctx.closePath();
                     ctx.fill();
 
                     ctx.beginPath();
                     ctx.font = '15px Arial';
                     ctx.fillStyle = '#6f4e37';
-                    ctx.fillText(`ITEM_COFFEE`, item.startingX-itemRadius-20,item.startingY-itemRadius);
+                    ctx.fillText(`ITEM_COFFEE`, item.getX()-item.getRadius()-20,item.getY()-item.getRadius());
                     ctx.closePath();
                 }
                 for ( let k = 0 ; k < items.length; k++){
                     let item = items[k];
-                    if(item.wall == 0){//leftSide
-                        if (item.destinationY >= item.startingY){
-                            var distanceX = item.destinationX - item.initialX;
-                            var distanceY = item.destinationY - item.initialY;
-                            var speedY = distanceY/itemAliveTime;
-                            var speedX = distanceX/itemAliveTime;
-                            item.startingX += speedX;
-                            item.startingY += speedY;
+                    var distanceX = Math.abs(item.getDestinationX() - item.getInitialX());
+                    var distanceY = Math.abs(item.getDestinationY() - item.getInitialY());
+                    var speedY = distanceY/item.getAliveTime();
+                    var speedX = distanceX/item.getAliveTime();
+                    if(item.getWall() == 0){//leftSide
+                        if (item.getDestinationY() >= item.getY()){
+                            item.setX(item.getX() + speedX);
+                            item.setY(item.getY() + speedY);
                         }
                         else{
-                            var distanceX = item.destinationX - item.initialX;
-                            var distanceY = item.initialY - item.destinationY;
-                            var speedY = distanceY/itemAliveTime;
-                            var speedX = distanceX/itemAliveTime;
-                            item.startingX += speedX;
-                            item.startingY -= speedY;
+                            item.setX(item.getX() + speedX);
+                            item.setY(item.getY() - speedY);
                         }
                     }
-                    else if (item.wall == 1){
-                        if (item.destinationY >= item.startingY){
-                            var distanceX = Math.abs(item.destinationX - item.initialX);
-                            var distanceY = Math.abs(item.destinationY - item.initialY);
-                            var speedY = distanceY/itemAliveTime;
-                            var speedX = distanceX/itemAliveTime;
-                            item.startingX -= speedX;
-                            item.startingY += speedY;
+                    else if (item.getWall() == 1){
+                        if (item.getDestinationY() >= item.getY()){
+                            item.setX(item.getX() - speedX);
+                            item.setY(item.getY() + speedY);
                         }
                         else{
-                            var distanceX = Math.abs(item.destinationX - item.initialX);
-                            var distanceY = Math.abs(item.initialY - item.destinationY);
-                            var speedY = distanceY/itemAliveTime;
-                            var speedX = distanceX/itemAliveTime;
-                            item.startingX -= speedX;
-                            item.startingY -= speedY;
+                            item.setX(item.getX() - speedX);
+                            item.setY(item.getY() - speedY);
+
                         }
                     }
-                    else if (item.wall == 2){
-                        if (item.destinationX >= item.startingX){
-                            var distanceX = Math.abs(item.destinationX - item.initialX);
-                            var distanceY = Math.abs(item.destinationY - item.initialY);
-                            var speedY = distanceY/itemAliveTime;
-                            var speedX = distanceX/itemAliveTime;
-                            item.startingX += speedX;
-                            item.startingY += speedY;
+                    else if (item.getWall() == 2){
+                        if (item.getDestinationX() >= item.getX()){
+                            item.setX(item.getX() + speedX);
+                            item.setY(item.getY() + speedY);
                         }
                         else{
-                            var distanceX = Math.abs(item.destinationX - item.initialX);
-                            var distanceY = Math.abs(item.initialY - item.destinationY);
-                            var speedY = distanceY/itemAliveTime;
-                            var speedX = distanceX/itemAliveTime;
-                            item.startingX -= speedX;
-                            item.startingY += speedY;
+                            item.setX(item.getX() - speedX);
+                            item.setY(item.getY() + speedY);
                         }
                     }
-                    else if (item.wall == 3){
-                        if (item.destinationX >= item.startingX){
-                            var distanceX = Math.abs(item.destinationX - item.initialX);
-                            var distanceY = Math.abs(item.destinationY - item.initialY);
-                            var speedY = distanceY/itemAliveTime;
-                            var speedX = distanceX/itemAliveTime;
-                            item.startingX += speedX;
-                            item.startingY -= speedY;
+                    else if (item.getWall() == 3){
+                        if (item.getDestinationX() >= item.getX()){
+                            item.setX(item.getX() + speedX);
+                            item.setY(item.getY() - speedY);
+
                         }
                         else{
-                            var distanceX = Math.abs(item.destinationX - item.initialX);
-                            var distanceY = Math.abs(item.initialY - item.destinationY);
-                            var speedY = distanceY/itemAliveTime;
-                            var speedX = distanceX/itemAliveTime;
-                            item.startingX -= speedX;
-                            item.startingY -= speedY;
+                            item.setX(item.getX() - speedX);
+                            item.setY(item.getY() - speedY);
                         }
                     }
                     
-                    if (item.startingX < -100 || item.startingX > 1400 || item.startingY < -100 || item.startingY > 1400){
+                    if (item.getX() < -100 || item.getX() > 1400 || item.getY() < -100 || item.getY() > 1400){
                         items.splice(k,1);
                     }
                 }
@@ -550,12 +406,16 @@
         setInterval(update, 10);
 
         function start(){
-            socket.emit('start', { id: myId});
+            if(!isStart){
+                socket.emit('start', { id: myId});
+                isStart = true;
+            }
         }
 
         socket.on('start_game', function(){
             isStart = true;
         })
+        
 
 
     </script>

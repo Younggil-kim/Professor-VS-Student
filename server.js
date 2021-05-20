@@ -15,6 +15,7 @@ app.get('/', (req, res) => {
 
 app.use('/views/keyHandler', express.static(__dirname+ '/views/keyHandler.js'))
 
+app.use('/views/gameObject', express.static(__dirname+ '/views/gameObject.js'))
 
 function getPlayerColor(){
     return "#" + Math.floor(Math.random() * 16777215).toString(16);
