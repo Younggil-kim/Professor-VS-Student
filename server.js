@@ -1,8 +1,10 @@
 //server.js
 const express = require('express');
+// const {Stage} = require('./stage/stageHandler.js');
 const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
+// const {StageOne} = require('./stage/stageHandler.js');
 
 
 server.listen(process.env.PORT || 8000, () => {
@@ -16,16 +18,34 @@ app.get('/', (req, res) => {
 app.use('/views/keyHandler', express.static(__dirname+ '/views/keyHandler.js'))
 
 app.use('/views/gameObject', express.static(__dirname+ '/views/gameObject.js'))
-
+app.use('/stage/stageHandler', express.static(__dirname + '/stage/stageHandler.js'))
 function getPlayerColor(){
     return "#" + Math.floor(Math.random() * 16777215).toString(16);
 }
 
 const canvasWidth = 1024;
 const canvasHeight = 768;
-
+let enemyFrequency = 1000;
 const startX = canvasWidth/2;
 const startY = canvasHeight/2;
+let stageTime = 15;
+
+
+class Stage{
+    constructor(stage){
+        this.stage = stage || null;
+    }
+    setStage(stage){
+        return this.stage = stage;
+    }
+    start(){
+        this.stage.start();
+    }
+
+}
+
+
+
 
 var enemyRadius = 10;
 
@@ -68,12 +88,10 @@ function endGame(socket){
 
 
 let stageGenerator;
-let stage = 2;
+let stage;
 let isAccessFail = false;
-let enemyGeneratorInterval;
-let enemyFrequency = 800;
-let itemGeneratorInterval;
-let itemFrequency = 15000;
+let enemyInterval;
+let itemInterval;
 
 io.on('connection', function(socket) {
     console.log(`${socket.id}님이 입장하셨습니다.`);
@@ -83,12 +101,10 @@ io.on('connection', function(socket) {
         endGame(socket);
         io.sockets.emit('leave_user', socket.id);
         if(balls.length == 0){
-            clearInterval(enemyGeneratorInterval);
-            clearInterval(stageGenerator);
-            clearInterval(itemGeneratorInterval);
-            stage = 2;
-            timer = 10;
-            enemyFrequency = 800;
+            // clearInterval(enemyGeneratorInterval);
+            // // clearInterval(stageGenerator);
+            // clearInterval(itemGeneratorInterval);
+            timer = 15;
             isAccessFail = false;
         }
     });
@@ -187,23 +203,51 @@ io.on('connection', function(socket) {
     }
 
     function enemyGenerator(){//전 방향 벽에서 총알 생성하게 하는거
-        enemyGeneratorInterval = setInterval(function (){
-            enemyLeftSideGenerator();
-            enemyRightSideGenerator();
-            enemyUpSideGenerator();
-            enemyDownSideGenerator();
-        }, enemyFrequency);
+        enemyLeftSideGenerator();
+        enemyRightSideGenerator();
+        enemyUpSideGenerator();
+        enemyDownSideGenerator();
     }
+
+
+    const StageOne = (function(){//전략패턴 사용
+        function StageOne(){}
+        StageOne.prototype.start = function(){
+            stage = 1;
+            // io.sockets.emit('stage_one_start');
+            let count = 0;
+            let itemMaximum = 1;
+            let itemCount = 0;
+            enemyInterval = setInterval(function () {
+                enemyGenerator();
+                count += enemyFrequency/1000;
+
+                if(Math.floor(count) >= 7 && itemCount < itemMaximum ){
+                    console.log(count);
+                    itemGenerator();
+                    itemCount++;
+                }
+                if (Math.floor(count) >= 15){
+                    clearInterval(enemyInterval);
+                    io.sockets.emit('stage_clear', {stage : stage});
+                }
+            }, enemyFrequency);
+        };
+        return StageOne;
+    })();
+
+    let stageStrategy = new Stage();
+    let stageOne = new StageOne;
 
 
     let host = balls[0].id;
     socket.on('start', function(data){
         isAccessFail= true;
         if(host == data.id){
-            enemyGenerator();
-            itemGenerator();
-            stageStart();
+            // enemyGenerator();
             io.sockets.emit('start_game');
+            stageStrategy.setStage(stageOne);
+            stageStrategy.start();
         }
 
     })
@@ -288,49 +332,46 @@ io.on('connection', function(socket) {
     }
 
     function itemGenerator(){
-        itemGeneratorInterval = setInterval(function(){
-            k = Math.floor(Math.random)*4
-            if(k == 0){
-                itemLeftSideGenerator();
-            }
-            else if(k == 1){
-                itemRightSideGenerator();
-            }
-            else if(k==2){
-                itemUpSideGenerator();
-            }
-            else{
-                itemDownSideGenerator();
-            }
-            
-        }, itemFrequency);
-    }
-
-    function stageClear(){
-        stage = stage + 1;
-        if (enemyFrequency > 200){
-            enemyFrequency -= 100;
+        k = Math.floor(Math.random)*4
+        if(k == 0){
+            itemLeftSideGenerator();
         }
-        clearInterval(enemyGeneratorInterval);
-        enemyGenerator();
+        else if(k == 1){
+            itemRightSideGenerator();
+        }
+        else if(k==2){
+            itemUpSideGenerator();
+        }
+        else{
+            itemDownSideGenerator();
+        }
     }
 
+    // function stageClear(){
+    //     stage = stage + 1;
+    //     if (enemyFrequency > 200){
+    //         enemyFrequency -= 100;
+    //     }
+    //     clearInterval(enemyGeneratorInterval);
+    //     enemyGenerator();
+    // }
 
-    function stageStart(){//스테이지 시작제어, 10초당 1스테이지
-        stageGenerator = setInterval(
-            function(){
-                io.sockets.emit('stage_number', {stage : stage, timer : 10});
-                if(stage == 9){
-                    io.sockets.emit('game_win', {isWin: true});
-                }
-                if(stage <= 8){
-                    stageClear();
-                }
 
-            }
-        , 10000)
+    // function stageStart(){//스테이지 시작제어, 10초당 1스테이지
+    //     stageGenerator = setInterval(
+    //         function(){
+    //             io.sockets.emit('stage_number', {stage : stage, timer : 10});
+    //             if(stage == 9){
+    //                 io.sockets.emit('game_win', {isWin: true});
+    //             }
+    //             if(stage <= 8){
+    //                 stageClear();
+    //             }
 
-    }
+    //         }
+    //     , 10000)
+    // }
+
     function stageFail(){
         var isFail = true;
         for(let i = 0 ; i < balls.length ; i++){

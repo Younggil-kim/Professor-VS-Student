@@ -176,6 +176,11 @@
             alert("The students won! ::::  Congratulations! :::: Your Grade is A+")
         })
 
+        let stageClear = false;
+        socket.on('stage_clear',function(data){
+            stageClear= true;
+        })
+
         function renderStage(){
             ctx.beginPath();
             ctx.fillStyle = '#000000';
@@ -360,7 +365,7 @@
                 }
         }
 
-        let timer = 10.00;
+        let timer = 15.00;
         function renderTimer(){
             ctx.beginPath();
             ctx.fillStyle = '#000000';
@@ -370,6 +375,15 @@
 
         }
 
+        function renderClearMessage(){
+            ctx.beginPath();
+            ctx.fillStyle = '#000000';
+            ctx.font = '50px Arial';
+            ctx.fillText(`Stage ${stage} Clear!!`,1024/2, 768/2);
+            ctx.closePath();
+        }
+
+
         function renderGame() {            
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 collisionDetection();
@@ -378,6 +392,9 @@
                 renderEnemys();
                 renderItems();
                 renderTimer();
+                if(stageClear){
+                    renderClearMessage();
+                }
                 acquireDetection();
                 if(coffeeEffect){
                     enemys.length = 0;
