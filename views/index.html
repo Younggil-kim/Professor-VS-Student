@@ -176,10 +176,7 @@
             alert("The students won! ::::  Congratulations! :::: Your Grade is A+")
         })
 
-        let stageClear = false;
-        socket.on('stage_clear',function(data){
-            stageClear= true;
-        })
+
 
         function renderStage(){
             ctx.beginPath();
@@ -379,9 +376,10 @@
             ctx.beginPath();
             ctx.fillStyle = '#000000';
             ctx.font = '50px Arial';
-            ctx.fillText(`Stage ${stage} Clear!!`,1024/2, 768/2);
+            ctx.fillText(`Stage ${stage-1} Clear!!`,1024/2, 768/2);
             ctx.closePath();
         }
+
 
 
         function renderGame() {            
@@ -424,7 +422,7 @@
 
         function start(){
             if(!isStart){
-                socket.emit('start', { id: myId});
+                socket.emit('start', { id: myId, stage : stage, waiting : false});
                 isStart = true;
             }
         }
@@ -432,7 +430,20 @@
         socket.on('start_game', function(){
             isStart = true;
         })
-        
+        let stageClear = false;
+        socket.on('stage_clear',function(data){//스테이지 하나가 끝난 상태
+            stageClear = true;
+            enemys.length = 0;
+            isStart = false;
+            socket.emit('start', { id: myId, stage : stage, waiting : true});//웨이팅 스테이지로 이동
+            stage = data.stage;//스테이지 1 업 시켜주기
+        })
+        socket.on('end_waiting', function(){//웨이팅이 끝난상태
+            timer = 15;
+            stageClear = false;
+            isStart = false;
+            socket.emit('start', { id: myId, stage : stage, waiting : false});            
+        })
 
 
     </script>
