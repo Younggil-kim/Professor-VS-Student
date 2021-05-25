@@ -223,7 +223,7 @@ io.on('connection', function(socket) {
         };
         return WaitingStage;
     })();
-
+    let itemTime = 5;
     const StageOne = (function(){//전략패턴 사용
         function StageOne(){}
         StageOne.prototype.start = function(){
@@ -231,11 +231,12 @@ io.on('connection', function(socket) {
             let stage = 1;
             let itemMaximum = 1;
             let itemCount = 0;
+            enemyFrequency = 1000;
             enemyInterval = setInterval(function () {
                 enemyGenerator();
                 count += 1;
 
-                if(Math.floor(count) >= 7 && itemCount < itemMaximum ){
+                if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
                     console.log(count);
                     itemGenerator();
                     itemCount++;
@@ -261,7 +262,7 @@ io.on('connection', function(socket) {
                 enemyGenerator();
                 count += 1;
 
-                if(Math.floor(count) >= 7 && itemCount < itemMaximum ){
+                if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
                     console.log(count);
                     itemGenerator();
                     itemCount++;
@@ -287,7 +288,7 @@ io.on('connection', function(socket) {
                 enemyGenerator();
                 count += 1;
 
-                if(Math.floor(count) >= 7 && itemCount < itemMaximum ){
+                if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
                     console.log(count);
                     itemGenerator();
                     itemCount++;
@@ -301,14 +302,146 @@ io.on('connection', function(socket) {
         return StageThree;
     })();
 
+    const StageFour = (function(){//전략패턴 사용
+        function StageFour(){}
+        StageFour.prototype.start = function(){
+            let count = 0;
+            let stage = 4;
+            let itemMaximum = 1;
+            let itemCount = 0;
+            enemyFrequency = 700;
+            enemyInterval = setInterval(function () {
+                enemyGenerator();
+                count += 1;
 
+                if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
+                    console.log(count);
+                    itemGenerator();
+                    itemCount++;
+                }
+                if (Math.floor(count) >= 21){
+                    clearInterval(enemyInterval);
+                    io.sockets.emit('stage_clear', {stage : stage+1});
+                }
+            }, enemyFrequency);
+        };
+        return StageFour;
+    })();
+
+    const StageFive = (function(){//전략패턴 사용
+        function StageFive(){}
+        StageFive.prototype.start = function(){
+            let count = 0;
+            let stage = 5;
+            let itemMaximum = 1;
+            let itemCount = 0;
+            enemyFrequency = 600;
+            enemyInterval = setInterval(function () {
+                enemyGenerator();
+                count += 1;
+
+                if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
+                    console.log(count);
+                    itemGenerator();
+                    itemCount++;
+                }
+                if (Math.floor(count) >= 25){
+                    clearInterval(enemyInterval);
+                    io.sockets.emit('stage_clear', {stage : stage+1});
+                }
+            }, enemyFrequency);
+        };
+        return StageFive;
+    })();
+
+    const StageSix = (function(){//전략패턴 사용
+        function StageSix(){}
+        StageSix.prototype.start = function(){
+            let count = 0;
+            let stage = 6;
+            let itemMaximum = 1;
+            let itemCount = 0;
+            enemyFrequency = 550;
+            enemyInterval = setInterval(function () {
+                enemyGenerator();
+                count += 1;
+
+                if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
+                    console.log(count);
+                    itemGenerator();
+                    itemCount++;
+                }
+                if (Math.floor(count) >= 27){
+                    clearInterval(enemyInterval);
+                    io.sockets.emit('stage_clear', {stage : stage+1});
+                }
+            }, enemyFrequency);
+        };
+        return StageSix;
+    })();
+
+    const StageSeven = (function(){//전략패턴 사용
+        function StageSeven(){}
+        StageSeven.prototype.start = function(){
+            let count = 0;
+            let stage = 7;
+            let itemMaximum = 1;
+            let itemCount = 0;
+            enemyFrequency = 500;
+            enemyInterval = setInterval(function () {
+                enemyGenerator();
+                count += 1;
+
+                if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
+                    console.log(count);
+                    itemGenerator();
+                    itemCount++;
+                }
+                if (Math.floor(count) >= 30){
+                    clearInterval(enemyInterval);
+                    io.sockets.emit('stage_clear', {stage : stage+1});
+                }
+            }, enemyFrequency);
+        };
+        return StageSeven;
+    })();
+
+    const StageEight = (function(){//전략패턴 사용
+        function StageEight(){}
+        StageEight.prototype.start = function(){
+            let count = 0;
+            let stage = 8;
+            let itemMaximum = 1;
+            let itemCount = 0;
+            enemyFrequency = 450;
+            enemyInterval = setInterval(function () {
+                enemyGenerator();
+                count += 1;
+
+                if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
+                    console.log(count);
+                    itemGenerator();
+                    itemCount++;
+                }
+                if (Math.floor(count) >= 33){
+                    clearInterval(enemyInterval);
+                    io.sockets.emit('stage_clear', {stage : stage+1});
+                }
+            }, enemyFrequency);
+        };
+        return StageEight;
+    })();
 
     let stageStrategy = new Stage();
     let stageOne = new StageOne;
     let waitingStage = new WaitingStage;
     let stageTwo = new StageTwo;
     let stageThree = new StageThree;
-
+    let stageFour = new StageFour;
+    let stageFive = new StageFive;
+    let stageSix = new StageSix;
+    let stageSeven = new StageSeven;
+    let stageEight = new StageEight;
 
     let host = balls[0].id;
     socket.on('start', function(data){
@@ -328,6 +461,31 @@ io.on('connection', function(socket) {
                 else if(data.stage == 3){
                     io.sockets.emit('start_game');
                     stageStrategy.setStage(stageThree);
+                    stageStrategy.start();
+                }
+                else if(data.stage == 4){
+                    io.sockets.emit('start_game');
+                    stageStrategy.setStage(stageFour);
+                    stageStrategy.start();
+                }
+                else if(data.stage == 5){
+                    io.sockets.emit('start_game');
+                    stageStrategy.setStage(stageFive);
+                    stageStrategy.start();
+                }
+                else if(data.stage == 6){
+                    io.sockets.emit('start_game');
+                    stageStrategy.setStage(stageSix);
+                    stageStrategy.start();
+                }
+                else if(data.stage == 7){
+                    io.sockets.emit('start_game');
+                    stageStrategy.setStage(stageSeven);
+                    stageStrategy.start();
+                }
+                else if(data.stage == 8){
+                    io.sockets.emit('start_game');
+                    stageStrategy.setStage(stageEight);
                     stageStrategy.start();
                 }
             }else
