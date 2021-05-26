@@ -1,27 +1,10 @@
     <script>
+//splice랑 coffeeEffect = data.coffee; 의미 궁금
+// 적들의 속도를 어떻게 접근해서 줄일것인지
+//
+    
 
-      
-        function updateState(id,x,y){
-            let ball = ballMap[id];
-            if(!ball){
-                return;
-            }
-            ball.setX(x);
-            ball.setY(y);
-        }
-
-        function sendData() {
-            let curPlayer = ballMap[myId];
-            let data = {};
-            data = {
-                id: curPlayer.getId(),
-                x: curPlayer.getX(),
-                y: curPlayer.getY(),
-            };
-            if(data){
-                socket.emit("send_location", data);
-            }
-        }
+       
        
         
         function acquireDetection(){
@@ -29,6 +12,7 @@
             for(var i = 0; i < items.length ; i++){
                 if(  Math.sqrt((ball.getX() - items[i].getX())**2 + (ball.getY() - items[i].getY())**2) <= ball.getRadius() + items[i].getRadius()){
                     socket.emit('item_detect');
+                    socket.emit('hotsix_detect');
                     items.splice(i,1);
                     break;
                 }
@@ -51,15 +35,28 @@
             console.log(items);
         })
 
+        //어차피 이름과 효과만 다른거니깐 같은 genrator event로 받아와서 hotsix라는 이름으로 넣어주자고
+        socket.on('item_generator', function(data){
+            let hotsix = new itemBall(data.startingX, data.startingY, data.destinationX, data.destinationY, data.wall)
+            items.push(hotsix);
+            console.log(hotsix);
+        })
+        
         let coffeeEffect = false;
         socket.on('coffee_effect', function(data){
             coffeeEffect = data.coffee;
         })       
 
+        let hotsixEffect = false;
+        socket.on('hotsix_effect', function(data){
+            hotsixEffect = data.hotsix;
+        })
+
         
         function renderItems(){
             for (let j = 0; j < items.length; j++){
-                    let item = items[j];
+                    
+                    let item = items[j];   //이게 왜 있는거임? 위에서 item이미 선언 했는데?
                     ctx.beginPath();
                     ctx.fillStyle = item.getColor();
                     ctx.arc(item.getX(), item.getY(), item.getRadius(), 0, Math.PI *2, false);
@@ -150,6 +147,11 @@
                     enemys.length = 0;
                     items.length = 0;
                     coffeeEffect = false;
+                }
+
+                if(hotsixEffect){
+                    //item의 이동속도 감소;
+                    hotsixEffect = false;
                 }
 
                 if(balls.length){

@@ -1,14 +1,12 @@
-//server.js
-const express = require('express');
-// const {Stage} = require('./stage/stageHandler.js');
-const app = express();
-const server = require('http').Server(app);
-const io = require('socket.io')(server);
-// const {StageOne} = require('./stage/stageHandler.js');
-
+//1. 서버에서 해주는 일 = item 생성해주기(generator로)
+//2. 클라에서 충돌반정 event를 받아서 해당 event에 대한 event를 emit해주기
 
     socket.on('item_detect', function(){
         io.sockets.emit('coffee_effect', {coffee : true});
+    })
+
+    socket.on('hotsix_detect', function(){
+        io.sockets.emit('hotsix_effcet',{hotsix : true});
     })
 
 
