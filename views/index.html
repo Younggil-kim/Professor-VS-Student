@@ -1,5 +1,6 @@
     <script>
 //splice랑 coffeeEffect = data.coffee; 의미 궁금
+//coffeEffect = data.coffee -> emit해준 값을 받아오는거네 server js에서 coffee를 true로 처리해줬으니깐 ㅇㅇ
 // 적들의 속도를 어떻게 접근해서 줄일것인지
 //
     
@@ -10,13 +11,22 @@
         function acquireDetection(){
             let ball = ballMap[myId]
             for(var i = 0; i < items.length ; i++){
-                if(  Math.sqrt((ball.getX() - items[i].getX())**2 + (ball.getY() - items[i].getY())**2) <= ball.getRadius() + items[i].getRadius()){
+                if (items[i]===item){
+                    if(  Math.sqrt((ball.getX() - items[i].getX())**2 + (ball.getY() - items[i].getY())**2) <= ball.getRadius() + items[i].getRadius()){
                     socket.emit('item_detect');
+                    items.splice(i,1);
+                    
+                }
+                }
+                else{
+                    if(  Math.sqrt((ball.getX() - items[i].getX())**2 + (ball.getY() - items[i].getY())**2) <= ball.getRadius() + items[i].getRadius()){
                     socket.emit('hotsix_detect');
                     items.splice(i,1);
                     break;
                 }
+                
             }
+            
         }
         
         var socket = io();
@@ -56,7 +66,11 @@
         function renderItems(){
             for (let j = 0; j < items.length; j++){
                     
-                    let item = items[j];   //이게 왜 있는거임? 위에서 item이미 선언 했는데?
+                    //let item = items[j];   //이게 왜 있는거임? 위에서 item이미 선언 했는데?
+                   // ->그냥 뒤에 코드 편하게 쓰려고 저장 해놓은거 같은데 계속 items[j]로 하기 귀찮으니깐
+                    //if items[j]== item: -> coffec로 처리하고
+                    //if itmes[j]== hotsix -> hotsiz로 처리하고
+
                     ctx.beginPath();
                     ctx.fillStyle = item.getColor();
                     ctx.arc(item.getX(), item.getY(), item.getRadius(), 0, Math.PI *2, false);
