@@ -72,23 +72,27 @@
                     //if itmes[j]== hotsix -> hotsiz로 처리하고
 
                     ctx.beginPath();
-                    ctx.fillStyle = item.getColor();
-                    ctx.arc(item.getX(), item.getY(), item.getRadius(), 0, Math.PI *2, false);
+                    ctx.fillStyle = items[j].getColor();
+                    ctx.arc(items[j].getX(), items[j].getY(), items[j].getRadius(), 0, Math.PI *2, false);
                     ctx.closePath();
                     ctx.fill();
 
                     ctx.beginPath();
                     ctx.font = '15px Arial';
                     ctx.fillStyle = '#6f4e37';
-                    ctx.fillText(`ITEM_COFFEE`, item.getX()-item.getRadius()-20,item.getY()-item.getRadius());
+                    if (items[j]==item){
+                        ctx.fillText(`ITEM_COFFEE`, items[j].getX()-items[j].getRadius()-20,items[j].getY()-items[j].getRadius());}
+                    else{
+                        ctx.fillText(`ITEM_Hotsix`, items[j].getX()-items[j].getRadius()-20,items[j].getY()-items[j].getRadius());}
+                    }
                     ctx.closePath();
                 }
                 for ( let k = 0 ; k < items.length; k++){
-                    let item = items[k];
-                    var distanceX = Math.abs(item.getDestinationX() - item.getInitialX());
-                    var distanceY = Math.abs(item.getDestinationY() - item.getInitialY());
-                    var speedY = distanceY/item.getAliveTime();
-                    var speedX = distanceX/item.getAliveTime();
+                
+                    var distanceX = Math.abs(items[j].getDestinationX() - items[j].getInitialX());
+                    var distanceY = Math.abs(items[j].getDestinationY() - items[j].getInitialY());
+                    var speedY = distanceY/items[j].getAliveTime();
+                    var speedX = distanceX/items[j].getAliveTime();
                     if(item.getWall() == 0){//leftSide
                         if (item.getDestinationY() >= item.getY()){
                             item.setX(item.getX() + speedX);
