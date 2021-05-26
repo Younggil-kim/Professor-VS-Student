@@ -94,49 +94,49 @@
                     var speedY = distanceY/items[j].getAliveTime();
                     var speedX = distanceX/items[j].getAliveTime();
                     if(item.getWall() == 0){//leftSide
-                        if (item.getDestinationY() >= item.getY()){
-                            item.setX(item.getX() + speedX);
-                            item.setY(item.getY() + speedY);
+                        if (items[j].getDestinationY() >= items[j].getY()){
+                            items[j].setX(items[j].getX() + speedX);
+                            items[j].setY(items[j].getY() + speedY);
                         }
                         else{
-                            item.setX(item.getX() + speedX);
-                            item.setY(item.getY() - speedY);
+                            items[j].setX(items[j].getX() + speedX);
+                            items[j].setY(items[j].getY() - speedY);
                         }
                     }
-                    else if (item.getWall() == 1){
-                        if (item.getDestinationY() >= item.getY()){
-                            item.setX(item.getX() - speedX);
-                            item.setY(item.getY() + speedY);
+                    else if (items[j].getWall() == 1){
+                        if (items[j].getDestinationY() >= items[j].getY()){
+                            items[j].setX(items[j].getX() - speedX);
+                            items[j].setY(items[j].getY() + speedY);
                         }
                         else{
-                            item.setX(item.getX() - speedX);
-                            item.setY(item.getY() - speedY);
+                            items[j].setX(items[j].getX() - speedX);
+                            items[j].setY(items[j].getY() - speedY);
 
                         }
                     }
-                    else if (item.getWall() == 2){
-                        if (item.getDestinationX() >= item.getX()){
-                            item.setX(item.getX() + speedX);
-                            item.setY(item.getY() + speedY);
+                    else if (items[j].getWall() == 2){
+                        if (items[j].getDestinationX() >= items[j].getX()){
+                            items[j].setX(items[j].getX() + speedX);
+                            items[j].setY(items[j].getY() + speedY);
                         }
                         else{
-                            item.setX(item.getX() - speedX);
-                            item.setY(item.getY() + speedY);
+                            items[j].setX(items[j].getX() - speedX);
+                            items[j].setY(items[j].getY() + speedY);
                         }
                     }
-                    else if (item.getWall() == 3){
-                        if (item.getDestinationX() >= item.getX()){
-                            item.setX(item.getX() + speedX);
-                            item.setY(item.getY() - speedY);
+                    else if (items[j].getWall() == 3){
+                        if (items[j].getDestinationX() >= items[j].getX()){
+                            items[j].setX(items[j].getX() + speedX);
+                            items[j].setY(items[j].getY() - speedY);
 
                         }
                         else{
-                            item.setX(item.getX() - speedX);
-                            item.setY(item.getY() - speedY);
+                            items[j].setX(items[j].getX() - speedX);
+                            items[j].setY(items[j].getY() - speedY);
                         }
                     }
                     
-                    if (item.getX() < -100 || item.getX() > 1400 || item.getY() < -100 || item.getY() > 1400){
+                    if (items[j].getX() < -100 || items[j].getX() > 1400 || items[j].getY() < -100 || items[j].getY() > 1400){
                         items.splice(k,1);
                     }
                 }
