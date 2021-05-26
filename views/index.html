@@ -1,65 +1,6 @@
-<!-- index.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professor VS Student</title>
-    <style>
-        * {padding : 0; margin: 0;}
-        canvas {background: #eee; display: block; margin : 0 auto;}
-    </style>
-    
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/views/keyHandler"></script>
-    <script src="/views/gameObject"></script>
-</head>
-<body>
-    <div style="text-align: center;">
-        <font size="10em" color="green">
-            Professor VS Student
-        </font>
-   </div>
-
-    <canvas id = "myCanvas" width ="1024" height = "768"></canvas>
     <script>
 
-        var canvas = document.getElementById("myCanvas");
-        var ctx = canvas.getContext("2d");
-
-        var balls  = [];
-        var ballMap = {};
-        var myId;
-
-        var rightPressed = false;
-        var leftPressed = false;
-        var upPressed = false;
-        var downPressed = false;
-
-        document.addEventListener("keydown", keyDownHandler,false);
-        document.addEventListener("keyup", keyUpHandler,false);
-
-        function joinUser(id,color,x,y){
-            let ball = new PlayerBall(id,color,x,y);
-            ball.setColor(color);
-            ball.setX(x);
-            ball.setY(y);
-
-            balls.push(ball);
-            ballMap[id] = ball;
-
-            return ball;
-        }
-        function leaveUser(id){
-            for(var i = 0 ; i < balls.length; i++){
-                if(balls[i].getId() == id){
-                    balls.splice(i,1);
-                    break;
-                }
-            }
-            delete ballMap[id];
-        }
+      
         function updateState(id,x,y){
             let ball = ballMap[id];
             if(!ball){
@@ -68,6 +9,7 @@
             ball.setX(x);
             ball.setY(y);
         }
+
         function sendData() {
             let curPlayer = ballMap[myId];
             let data = {};
@@ -80,16 +22,7 @@
                 socket.emit("send_location", data);
             }
         }
-        function collisionDetection(){
-            let ball = ballMap[myId]
-            for(var i = 0; i < enemys.length ; i++){
-                if(  Math.sqrt((ball.getX() - enemys[i].getX())**2 + (ball.getY() - enemys[i].getY())**2) <= enemys[i].getRadius() + ball.getRadius()){
-                    ball.setState(0);
-                    socket.emit('collision_detect', {id : ball.getId()});
-                    break;
-                }
-            }
-        }
+       
         
         function acquireDetection(){
             let ball = ballMap[myId]
@@ -104,46 +37,12 @@
         
         var socket = io();
 
-        socket.on('user_id', function(data){
-            myId = data;
-        });
-        socket.on('join_user', function(data){
-            joinUser(data.id, data.color, data.x, data.y);
-        })
-        socket.on('leave_user', function(data){
-            leaveUser(data);
-        })
-        socket.on('update_state', function(data){
-            updateState(data.id, data.x, data.y);
-        })
-        
-        socket.on('collision_update', function(data){
-            for( var i = 0 ; i < balls.length; i++){
-            if(balls[i].getId() == data.id){
-                balls[i].setState(0);
-                break;
-            }
-        }
-        })
+     
+     
 
-        
-        var enemys = [];
-
+    
         var items = [];
 
-
-        socket.on('force_disconnect', function(data){
-            alert("현재 방에 3명 이상이거나 게임중 입니다.")
-            window.close();
-            self.close();
-            window.opener = window.location.href; self.close();
-            window.open('about:blank', '_self').close();   
-        })
-        socket.on('enemy_generator', function(data){
-            let enemy = new EnemyBall(data.startingX, data.startingY, data.destinationX, data.destinationY, data.wall)
-            enemys.push(enemy);
-            console.log(enemys);
-        })
 
 
         socket.on('item_generator', function(data){
@@ -155,141 +54,7 @@
         let coffeeEffect = false;
         socket.on('coffee_effect', function(data){
             coffeeEffect = data.coffee;
-        })
-
-        let stage = 1;
-        socket.on('stage_number', function(data){
-            stage = data.stage;
-            timer = data.timer;
-            console.log(stage)
-        })
-
-
-        socket.on('game_over', function(data){//전 플레이어가 죽으면 나오는 이벤트
-            if (data.isFail){
-                alert("The professor won! ::: Game Over :::: Your Grade is F");
-                window.open('about:blank', '_self');
-            }
-        })
-
-        socket.on('game_win', function(data){
-            alert("The students won! ::::  Congratulations! :::: Your Grade is A+")
-        })
-
-
-
-        function renderStage(){
-            ctx.beginPath();
-            ctx.fillStyle = '#000000';
-            ctx.font = '30px Arial';
-            ctx.fillText(`Stage ${stage}`,30,30);
-            ctx.closePath();
-        }
-
-        function renderPlayers(){
-            for (let i = 0; i < balls.length; i++) {
-                    let ball = balls[i];
-                    if (ball.getState() == 0){
-                        continue
-                    }
-                    ctx.beginPath();
-                    ctx.fillStyle = ball.getColor();
-                    ctx.arc(ball.getX(), ball.getY(), ball.getRadius(), 0, Math.PI * 2, false);
-                    ctx.closePath();
-                    ctx.fill();
-                    
-                    ctx.beginPath();
-                    ctx.font = '15px Arial';
-                    ctx.fillText(`player ${i}`,ball.getX()- ball.getRadius()-7, ball.getY() - ball.getRadius());
-                    ctx.closePath();
-                }
-                let curPlayer = ballMap[myId];
-                if (rightPressed){
-                    if (curPlayer.getX() <= 1024 - curPlayer.getRadius()){
-                        curPlayer.setX(curPlayer.getX() + curPlayer.getPlayerSpeed());
-                    }
-                }
-                if (leftPressed ){
-                    if(curPlayer.getX() >= 0 + curPlayer.getRadius()){
-                        curPlayer.setX(curPlayer.getX() - curPlayer.getPlayerSpeed());
-                    }
-                }
-                if(upPressed ){
-                    if(curPlayer.getY() >= 0 + curPlayer.getRadius()){
-                        curPlayer.setY(curPlayer.getY() - curPlayer.getPlayerSpeed());
-                    }
-                }
-                if(downPressed ){
-                    if(curPlayer.getY() <= 768 - curPlayer.getRadius()){
-                        curPlayer.setY(curPlayer.getY() + curPlayer.getPlayerSpeed());
-                    }
-                }
-        }
-
-        function renderEnemys(){
-            for (let j = 0; j < enemys.length; j++){
-                    let enemy = enemys[j];
-                    ctx.beginPath();
-                    ctx.fillStyle = enemy.getColor();
-                    ctx.arc(enemy.getX(), enemy.getY(), enemy.getRadius(), 0, Math.PI *2, false);
-                    ctx.closePath();
-                    ctx.fill();
-                }
-                for ( let k = 0 ; k < enemys.length; k++){
-                    let enemy = enemys[k];
-                    var distanceX = Math.abs(enemy.getDestinationX() - enemy.getInitialX());
-                    var distanceY = Math.abs(enemy.getDestinationY() - enemy.getInitialY());
-                    var speedY = distanceY/enemy.getAliveTime();
-                    var speedX = distanceX/enemy.getAliveTime();
-                    if(enemy.getWall() == 0){//leftSide
-                        if (enemy.getDestinationY() >= enemy.getY()){
-                            enemy.setX(enemy.getX() + speedX);
-                            enemy.setY(enemy.getY() + speedY);
-                        }
-                        else{
-                            enemy.setX(enemy.getX() + speedX);
-                            enemy.setY(enemy.getY() - speedY);
-                        }
-                    }
-                    else if (enemy.getWall() == 1){
-                        if (enemy.getDestinationY() >= enemy.getY()){
-                            enemy.setX(enemy.getX() - speedX);
-                            enemy.setY(enemy.getY() + speedY);
-
-                        }
-                        else{
-                            enemy.setX(enemy.getX() - speedX);
-                            enemy.setY(enemy.getY() - speedY);
-
-                        }
-                    }
-                    else if (enemy.getWall() == 2){
-                        if (enemy.getDestinationX() >= enemy.getX()){
-                            enemy.setX(enemy.getX() + speedX);
-                            enemy.setY(enemy.getY() + speedY);
-                        }
-                        else{
-                            enemy.setX(enemy.getX() - speedX);
-                            enemy.setY(enemy.getY() + speedY);
-                        }
-                    }
-                    else if (enemy.getWall() == 3){
-                        if (enemy.getDestinationX() >= enemy.getX()){
-                            enemy.setX(enemy.getX() + speedX);
-                            enemy.setY(enemy.getY() - speedY);
-                        }
-                        else{
-                            enemy.setX(enemy.getX() - speedX);
-                            enemy.setY(enemy.getY() - speedY);
-                        }
-                    }
-                    
-                    if (enemy.getX() < -100 || enemy.getX() > 1400 || enemy.getY() < -100 || enemy.getY() > 1400){
-                        enemys.splice(k,1);
-                    }
-                }
-        }
-
+        })       
 
         
         function renderItems(){
@@ -362,23 +127,10 @@
                 }
         }
 
-        let timer = 15.00;
-        function renderTimer(){
-            ctx.beginPath();
-            ctx.fillStyle = '#000000';
-            ctx.font = '20px Arial';
-            ctx.fillText(`Timer ${timer.toFixed(2)}`,30,50);
-            ctx.closePath();
+      
+        
 
-        }
-
-        function renderClearMessage(){
-            ctx.beginPath();
-            ctx.fillStyle = '#000000';
-            ctx.font = '50px Arial';
-            ctx.fillText(`Stage ${stage-1} Clear!!`,1024/2, 768/2);
-            ctx.closePath();
-        }
+     
 
 
 
@@ -420,30 +172,8 @@
 
         setInterval(update, 10);
 
-        function start(){
-            if(!isStart){
-                socket.emit('start', { id: myId, stage : stage, waiting : false});
-                isStart = true;
-            }
-        }
-
-        socket.on('start_game', function(){
-            isStart = true;
-        })
-        let stageClear = false;
-        socket.on('stage_clear',function(data){//스테이지 하나가 끝난 상태
-            stageClear = true;
-            enemys.length = 0;
-            isStart = false;
-            socket.emit('start', { id: myId, stage : stage, waiting : true});//웨이팅 스테이지로 이동
-            stage = data.stage;//스테이지 1 업 시켜주기
-        })
-        socket.on('end_waiting', function(){//웨이팅이 끝난상태
-            timer = 15;
-            stageClear = false;
-            isStart = false;
-            socket.emit('start', { id: myId, stage : stage, waiting : false});            
-        })
+       
+       
 
 
     </script>
