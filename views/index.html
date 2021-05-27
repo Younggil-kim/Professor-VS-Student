@@ -138,6 +138,8 @@
         var straightEnemys = [];
         var items = [];
 
+        let hotsixEffect = false;
+
         socket.on('force_disconnect', function(data){
             alert("현재 방에 3명 이상이거나 게임중 입니다.")
             window.close();
@@ -146,10 +148,14 @@
             window.open('about:blank', '_self').close();   
         })
         socket.on('enemy_generator', function(data){
-            let enemy = new EnemyBall(data.startingX, data.startingY, data.destinationX, data.destinationY, data.wall)
-            enemys.push(enemy);
-            console.log(enemys);
+            if(hotsixEffect == false){
+                let enemy = new EnemyBall(data.startingX, data.startingY, data.destinationX, data.destinationY, data.wall)
+                enemys.push(enemy);
+                console.log(enemys);                
+            }
+
         })
+    
 
         socket.on('straight_enemy_generator', function(data){
             console.log('hello');
@@ -169,9 +175,10 @@
         socket.on('coffee_effect', function(data){
             coffeeEffect = data.coffee;
         })
-        let hotsixEffect = false;
+        let stopTimer = 0;
         socket.on('hotsix_effect', function(data){
             hotsixEffect = data.hotsix;
+            stopTimer = timer;
         })
 
 
@@ -185,12 +192,14 @@
 
         socket.on('game_over', function(data){//전 플레이어가 죽으면 나오는 이벤트
             if (data.isFail){
+                stage = 1;
                 alert("The professor won! ::: Game Over :::: Your Grade is F");
                 window.open('about:blank', '_self');
             }
         })
 
         socket.on('game_win', function(data){
+            stage = 1;
             alert("The students won! ::::  Congratulations! :::: Your Grade is A+")
             window.open('about:blank', '_self');
         })
@@ -205,6 +214,7 @@
             ctx.closePath();
         }
 
+
         function renderPlayers(){
             for (let i = 0; i < balls.length; i++) {
                     let ball = balls[i];
@@ -214,8 +224,9 @@
                     ctx.beginPath();
                     ctx.fillStyle = ball.getColor();
                     ctx.arc(ball.getX(), ball.getY(), ball.getRadius(), 0, Math.PI * 2, false);
-                    ctx.closePath();
                     ctx.fill();
+                    ctx.closePath();
+
                     
                     ctx.beginPath();
                     ctx.font = '15px Arial';
@@ -251,8 +262,9 @@
                     ctx.beginPath();
                     ctx.fillStyle = enemy.getColor();
                     ctx.arc(enemy.getX(), enemy.getY(), enemy.getRadius(), 0, Math.PI *2, false);
-                    ctx.closePath();
                     ctx.fill();
+                    ctx.closePath();
+
                 }
                 for ( let k = 0 ; k < enemys.length; k++){
                     let enemy = enemys[k];
@@ -260,53 +272,67 @@
                     var distanceY = Math.abs(enemy.getDestinationY() - enemy.getInitialY());
                     var speedY = distanceY/enemy.getAliveTime();
                     var speedX = distanceX/enemy.getAliveTime();
-                    if(enemy.getWall() == 0){//leftSide
-                        if (enemy.getDestinationY() >= enemy.getY()){
-                            enemy.setX(enemy.getX() + speedX);
-                            enemy.setY(enemy.getY() + speedY);
+                    enemy.setSpeedX(speedX);
+                    enemy.setSpeedY(speedY);
+                    if(hotsixEffect){
+                        items.length = 0;
+                        enemy.setSpeedX(0);
+                        enemy.setSpeedY(0);
+                        enemy.setX(enemy.getX());
+                        enemy.setY(enemy.getY());
+                        if(Math.abs(stopTimer- timer) >= 3){
+                            hotsixEffect = false;
                         }
-                        else{
-                            enemy.setX(enemy.getX() + speedX);
-                            enemy.setY(enemy.getY() - speedY);
-                        }
+                        
                     }
-                    else if (enemy.getWall() == 1){
-                        if (enemy.getDestinationY() >= enemy.getY()){
-                            enemy.setX(enemy.getX() - speedX);
-                            enemy.setY(enemy.getY() + speedY);
+                        if(enemy.getWall() == 0){//leftSide
+                            if (enemy.getDestinationY() >= enemy.getY()){
+                                enemy.setX(enemy.getX() + enemy.getSpeedX());
+                                enemy.setY(enemy.getY() + enemy.getSpeedY());
+                            }
+                            else{
+                                enemy.setX(enemy.getX() + enemy.getSpeedX());
+                                enemy.setY(enemy.getY() - enemy.getSpeedY());
+                            }
+                        }
+                        else if (enemy.getWall() == 1){
+                            if (enemy.getDestinationY() >= enemy.getY()){
+                                enemy.setX(enemy.getX() - enemy.getSpeedX());
+                                enemy.setY(enemy.getY() + enemy.getSpeedY());
 
-                        }
-                        else{
-                            enemy.setX(enemy.getX() - speedX);
-                            enemy.setY(enemy.getY() - speedY);
+                            }
+                            else{
+                                enemy.setX(enemy.getX() - enemy.getSpeedX());
+                                enemy.setY(enemy.getY() - enemy.getSpeedY());
 
+                            }
                         }
-                    }
-                    else if (enemy.getWall() == 2){
-                        if (enemy.getDestinationX() >= enemy.getX()){
-                            enemy.setX(enemy.getX() + speedX);
-                            enemy.setY(enemy.getY() + speedY);
+                        else if (enemy.getWall() == 2){
+                            if (enemy.getDestinationX() >= enemy.getX()){
+                                enemy.setX(enemy.getX() + enemy.getSpeedX());
+                                enemy.setY(enemy.getY() + enemy.getSpeedY());
+                            }
+                            else{
+                                enemy.setX(enemy.getX() - enemy.getSpeedX());
+                                enemy.setY(enemy.getY() + enemy.getSpeedY());
+                            }
                         }
-                        else{
-                            enemy.setX(enemy.getX() - speedX);
-                            enemy.setY(enemy.getY() + speedY);
+                        else if (enemy.getWall() == 3){
+                            if (enemy.getDestinationX() >= enemy.getX()){
+                                enemy.setX(enemy.getX() + enemy.getSpeedX());
+                                enemy.setY(enemy.getY() - enemy.getSpeedY());
+                            }
+                            else{
+                                enemy.setX(enemy.getX() - enemy.getSpeedX());
+                                enemy.setY(enemy.getY() - enemy.getSpeedY());
+                            }
                         }
-                    }
-                    else if (enemy.getWall() == 3){
-                        if (enemy.getDestinationX() >= enemy.getX()){
-                            enemy.setX(enemy.getX() + speedX);
-                            enemy.setY(enemy.getY() - speedY);
-                        }
-                        else{
-                            enemy.setX(enemy.getX() - speedX);
-                            enemy.setY(enemy.getY() - speedY);
-                        }
-                    }
-                    
-                    if (enemy.getX() < -100 || enemy.getX() > 1400 || enemy.getY() < -100 || enemy.getY() > 1400){
+                        
+                        if (enemy.getX() < -100 || enemy.getX() > 1400 || enemy.getY() < -100 || enemy.getY() > 1400){
                         enemys.splice(k,1);
                     }
-                }
+                
+            }
         }
 
         function renderStraightEnemys(){
@@ -315,8 +341,9 @@
                     ctx.beginPath();
                     ctx.fillStyle = straightEnemy.getColor();
                     ctx.arc(straightEnemy.getX(), straightEnemy.getY(), straightEnemy.getRadius(), 0, Math.PI *2, false);
-                    ctx.closePath();
                     ctx.fill();
+                    ctx.closePath();
+
                 }
                 for ( let k = 0 ; k < straightEnemys.length; k++){
                     let straightEnemy = straightEnemys[k];
@@ -381,8 +408,9 @@
                         ctx.beginPath();
                         ctx.fillStyle = item.getColor("coffee");
                         ctx.arc(item.getX(), item.getY(), item.getRadius(), 0, Math.PI *2, false);
-                        ctx.closePath();
                         ctx.fill();
+                        ctx.closePath();
+
 
                         ctx.beginPath();
                         ctx.font = '15px Arial';
@@ -394,8 +422,8 @@
                         ctx.beginPath();
                         ctx.fillStyle = item.getColor("hotsix");
                         ctx.arc(item.getX(), item.getY(), item.getRadius(), 0, Math.PI *2, false);
-                        ctx.closePath();
                         ctx.fill();
+                        ctx.closePath();
 
                         ctx.beginPath();
                         ctx.font = '15px Arial';
@@ -476,7 +504,6 @@
             ctx.font = '50px Arial';
             ctx.fillText(`Stage ${stage-1} Clear!!`,1024/2-150, 768/2-80);
             ctx.fillText(`The next stage will start shortly.`,1024/2-350, 768/2);
-            
             ctx.closePath();
         }
 
@@ -501,10 +528,7 @@
                     items.length = 0;
                     coffeeEffect = false;
                 }
-                if(hotsixEffect){
 
-                    hotsixEffect = false;
-                }
                 if(balls.length){
                     sendData();
                 }
@@ -546,7 +570,7 @@
                     balls[i].setX(1024/2);
                     balls[i].setY(768/2);
                     balls[i].setState(1);
-            }
+                }
             }
 
             isStart = false;

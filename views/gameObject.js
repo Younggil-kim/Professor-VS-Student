@@ -66,7 +66,23 @@ class EnemyBall{
         this.wall = wall;
         this.radius = 10;
         this.aliveTime = 300;
+        this.speedX = 0;
+        this.speedY = 0;
     }
+    getSpeedX(){
+        return this.speedX;
+    }
+    setSpeedX(speedX){
+        this.speedX = speedX;
+    }
+
+    getSpeedY(){
+        return this.speedY;
+    }
+    setSpeedY(speedY){
+        this.speedY = speedY;
+    }
+
     getColor(){
         return this.color;
     }

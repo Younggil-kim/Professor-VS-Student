@@ -329,7 +329,6 @@ io.on('connection', function(socket) {
 
                 if(count == 5 ){
                     console.log(count);
-                    // itemGenerator("hotsix");
                     itemCount++;
                 }
                 if (Math.floor(count) >= 15){
@@ -358,7 +357,7 @@ io.on('connection', function(socket) {
 
                 if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
                     console.log(count);
-                    // itemGenerator();
+                    itemGenerator("hotsix");
                     itemCount++;
                 }
                 if (Math.floor(count) >= 17){
@@ -419,7 +418,7 @@ io.on('connection', function(socket) {
 
                 if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
                     console.log(count);
-                    itemGenerator("hoxsix");
+                    itemGenerator("coffee");
                     itemCount++;
                 }
                 if(count == 5){
@@ -664,7 +663,7 @@ io.on('connection', function(socket) {
             io.sockets.emit('coffee_effect', {coffee : true});
         }
         else if(data.name == "hotsix"){
-            io.sockets.emit('hotsix_effcet',{hotsix : true});
+            io.sockets.emit('hotsix_effect',{hotsix : true});
         }
     })
 
@@ -713,7 +712,7 @@ io.on('connection', function(socket) {
                     name : name
                 })
             }
-            else if(name == "hoxsix"){
+            else if(name == "hotsix"){
                 io.sockets.emit('item_generator', {
                     wall: 1,
                     startingX: canvasWidth+itemRadius,
