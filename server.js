@@ -17,9 +17,9 @@ app.get('/', (req, res) => {
 })
 
 app.use('/views/keyHandler', express.static(__dirname+ '/views/keyHandler.js'))
-
 app.use('/views/gameObject', express.static(__dirname+ '/views/gameObject.js'))
 app.use('/stage/stageHandler', express.static(__dirname + '/stage/stageHandler.js'))
+
 function getPlayerColor(){
     return "#" + Math.floor(Math.random() * 16777215).toString(16);
 }
@@ -31,6 +31,7 @@ const startX = canvasWidth/2;
 const startY = canvasHeight/2;
 let stageTime = 15;
 
+let isStart = false;
 
 class Stage{
     constructor(stage){
@@ -102,9 +103,8 @@ io.on('connection', function(socket) {
         endGame(socket);
         io.sockets.emit('leave_user', socket.id);
         if(balls.length == 0){
+            isStart = false;
             clearInterval(enemyInterval);
-            // // clearInterval(stageGenerator);
-            // clearInterval(itemGeneratorInterval);
             timer = 15;
             isAccessFail = false;
         }
@@ -212,8 +212,8 @@ io.on('connection', function(socket) {
 
     function straightEnemyLeftSideGenerator(){
         if(balls.length){
-            for(var i=0; i<11; i++){
-                var y = 30 + enemyRadius + i*68;
+            for(var i=0; i<9; i++){
+                var y = 30 + enemyRadius + i*84;
                 io.sockets.emit('straight_enemy_generator', {
                     wall : 0,
                     startingX:  enemyRadius,
@@ -236,8 +236,8 @@ io.on('connection', function(socket) {
 
     function straightEnemyRightSideGenerator(){
         if(balls.length){
-            for(var i=0; i<11; i++){
-                var y = 30 + enemyRadius + i * 68;
+            for(var i=0; i<9; i++){
+                var y = 30 + enemyRadius + i * 84;
                 io.sockets.emit('straight_enemy_generator',{
                     wall : 1,
                         startingX:  canvasWidth+enemyRadius,
@@ -251,8 +251,8 @@ io.on('connection', function(socket) {
     
     function straightEnemyUpSideGenerator(){
         if(balls.length){
-            for(var i=0; i<15; i++){
-                var x = 30 + enemyRadius + i* 68;
+            for(var i=0; i<12; i++){
+                var x = 30 + enemyRadius + i* 84;
                 io.sockets.emit('straight_enemy_generator', {
                     wall : 2,
                     startingX:  x,
@@ -266,8 +266,8 @@ io.on('connection', function(socket) {
 
     function straightEnemyDownSideGenerator(){
         if(balls.length){
-            for(var i=0; i<15; i++){
-                var x = 30+ enemyRadius + i * 68;
+            for(var i=0; i<12; i++){
+                var x = 30+ enemyRadius + i * 84;
                 io.sockets.emit('straight_enemy_generator', {
                     wall : 3,
                     startingX:  x,
@@ -289,7 +289,7 @@ io.on('connection', function(socket) {
                 straightEnemyLeftSideGenerator();
             }
         }
-        else{
+        else if(stage == 0){
             if(random == 1){
                 straightEnemyDownSideGenerator();
             }
@@ -313,6 +313,7 @@ io.on('connection', function(socket) {
         };
         return WaitingStage;
     })();
+    
     let itemTime = 5;
     const StageOne = (function(){//전략패턴 사용
         function StageOne(){}
@@ -326,13 +327,16 @@ io.on('connection', function(socket) {
                 enemyGenerator();
                 count += 1;
 
-                if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
+                if(count == 5 ){
                     console.log(count);
-                    itemGenerator();
+                    // itemGenerator("hotsix");
                     itemCount++;
                 }
                 if (Math.floor(count) >= 15){
                     clearInterval(enemyInterval);
+                    for (var i = 0 ; i < balls.length ; i++){
+                            balls[i].state = 1;
+                        }
                     io.sockets.emit('stage_clear', {stage : stage+1});
                 }
             }, enemyFrequency);
@@ -354,11 +358,14 @@ io.on('connection', function(socket) {
 
                 if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
                     console.log(count);
-                    itemGenerator();
+                    // itemGenerator();
                     itemCount++;
                 }
-                if (Math.floor(count) >= 16){
+                if (Math.floor(count) >= 17){
                     clearInterval(enemyInterval);
+                    for (var i = 0 ; i < balls.length ; i++){
+                        balls[i].state = 1;
+                    }
                     io.sockets.emit('stage_clear', {stage : stage+1});
                 }
             }, enemyFrequency);
@@ -380,14 +387,17 @@ io.on('connection', function(socket) {
 
                 if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
                     console.log(count);
-                    itemGenerator();
+                    itemGenerator("hotsix");
                     itemCount++;
                 }
-                if(count % 9 == 0){
+                if(count == 5){
                     straightEnemyGenerator(1);
                 }
-                if (Math.floor(count) >= 18){
+                if (Math.floor(count) >= 19){
                     clearInterval(enemyInterval);
+                    for (var i = 0 ; i < balls.length ; i++){
+                        balls[i].state = 1;
+                    }
                     io.sockets.emit('stage_clear', {stage : stage+1});
                 }
             }, enemyFrequency);
@@ -409,14 +419,17 @@ io.on('connection', function(socket) {
 
                 if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
                     console.log(count);
-                    itemGenerator();
+                    itemGenerator("hoxsix");
                     itemCount++;
                 }
-                if(count % 11 == 0){
+                if(count == 5){
                     straightEnemyGenerator(0);
                 }
-                if (Math.floor(count) >= 21){
+                if (Math.floor(count) >= 22){
                     clearInterval(enemyInterval);
+                    for (var i = 0 ; i < balls.length ; i++){
+                        balls[i].state = 1;
+                    }
                     io.sockets.emit('stage_clear', {stage : stage+1});
                 }
             }, enemyFrequency);
@@ -438,14 +451,17 @@ io.on('connection', function(socket) {
 
                 if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
                     console.log(count);
-                    itemGenerator();
+                    itemGenerator("coffee");
                     itemCount++;
                 }
-                if(count == 10 || count == 18){
+                if(count == 4 || count == 9){
                     straightEnemyGenerator(1);
                 }
-                if (Math.floor(count) >= 25){
+                if (Math.floor(count) >= 26){
                     clearInterval(enemyInterval);
+                    for (var i = 0 ; i < balls.length ; i++){
+                        balls[i].state = 1;
+                    }
                     io.sockets.emit('stage_clear', {stage : stage+1});
                 }
             }, enemyFrequency);
@@ -467,14 +483,17 @@ io.on('connection', function(socket) {
 
                 if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
                     console.log(count);
-                    itemGenerator();
+                    itemGenerator("coffee");
                     itemCount++;
                 }
-                if(count % 9 == 0){
+                if(count == 4 || count == 9){
                     straightEnemyGenerator(0);
                 }
-                if (Math.floor(count) >= 27){
+                if (Math.floor(count) >= 28){
                     clearInterval(enemyInterval);
+                    for (var i = 0 ; i < balls.length ; i++){
+                        balls[i].state = 1;
+                    }
                     io.sockets.emit('stage_clear', {stage : stage+1});
                 }
             }, enemyFrequency);
@@ -496,14 +515,22 @@ io.on('connection', function(socket) {
 
                 if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
                     console.log(count);
-                    itemGenerator();
+                    itemGenerator("coffee");
                     itemCount++;
                 }
-                if(count % 8 == 0){
-                    straightEnemyGenerator(1);
+                if(count == 3 || count == 6 || count == 9){
+                    if (count == 6){
+                        straightEnemyGenerator(0);    
+                    }
+                    else{
+                        straightEnemyGenerator(1);
+                    }
                 }
-                if (Math.floor(count) >= 30){
+                if (Math.floor(count) >= 31){
                     clearInterval(enemyInterval);
+                    for (var i = 0 ; i < balls.length ; i++){
+                        balls[i].state = 1;
+                    }
                     io.sockets.emit('stage_clear', {stage : stage+1});
                 }
             }, enemyFrequency);
@@ -522,18 +549,25 @@ io.on('connection', function(socket) {
             enemyInterval = setInterval(function () {
                 enemyGenerator();
                 count += 1;
-
                 if(Math.floor(count) >= itemTime && itemCount < itemMaximum ){
                     console.log(count);
-                    itemGenerator();
+                    itemGenerator("coffee");
                     itemCount++;
                 }
-                if(count % 8 == 0){
-                    straightEnemyGenerator(0);
+                if(count == 3 || count == 6 || count == 9){
+                    if (count == 6){
+                        straightEnemyGenerator(0);    
+                    }
+                    else{
+                        straightEnemyGenerator(1);
+                    }
                 }
-                if (Math.floor(count) >= 33){
+                if (Math.floor(count) >= 34){
                     clearInterval(enemyInterval);
-                    io.sockets.emit('stage_clear', {stage : stage+1});
+                    for (var i = 0 ; i < balls.length ; i++){
+                        balls[i].state = 1;
+                    }
+                    io.sockets.emit('game_win');
                 }
             }, enemyFrequency);
         };
@@ -552,58 +586,62 @@ io.on('connection', function(socket) {
     let stageEight = new StageEight;
 
     let host = balls[0].id;
-    socket.on('start', function(data){
-        isAccessFail= true;
-        if(host == data.id){
-            if(data.waiting == false){
-                if(data.stage == 1){
-                    io.sockets.emit('start_game');
-                    stageStrategy.setStage(stageOne);
+    if(isStart == false){
+        socket.on('start', function(data){
+            isAccessFail= true;
+            isStart = data.isStart;
+            if(host == data.id){
+                if(data.waiting == false){
+                    if(data.stage == 1){
+                        io.sockets.emit('start_game');
+                        stageStrategy.setStage(stageOne);
+                        stageStrategy.start();
+                    }
+                    else if(data.stage == 2){
+                        io.sockets.emit('start_game');
+                        stageStrategy.setStage(stageTwo);
+                        stageStrategy.start();
+                    }
+                    else if(data.stage == 3){
+                        io.sockets.emit('start_game');
+                        stageStrategy.setStage(stageThree);
+                        stageStrategy.start();
+                    }
+                    else if(data.stage == 4){
+                        io.sockets.emit('start_game');
+                        stageStrategy.setStage(stageFour);
+                        stageStrategy.start();
+                    }
+                    else if(data.stage == 5){
+                        io.sockets.emit('start_game');
+                        stageStrategy.setStage(stageFive);
+                        stageStrategy.start();
+                    }
+                    else if(data.stage == 6){
+                        io.sockets.emit('start_game');
+                        stageStrategy.setStage(stageSix);
+                        stageStrategy.start();
+                    }
+                    else if(data.stage == 7){
+                        io.sockets.emit('start_game');
+                        stageStrategy.setStage(stageSeven);
+                        stageStrategy.start();
+                    }
+                    else if(data.stage == 8){
+                        io.sockets.emit('start_game');
+                        stageStrategy.setStage(stageEight);
+                        stageStrategy.start();
+                    }
+                }else
+                {
+                    stageStrategy.setStage(waitingStage);
                     stageStrategy.start();
                 }
-                else if(data.stage == 2){
-                    io.sockets.emit('start_game');
-                    stageStrategy.setStage(stageTwo);
-                    stageStrategy.start();
-                }
-                else if(data.stage == 3){
-                    io.sockets.emit('start_game');
-                    stageStrategy.setStage(stageThree);
-                    stageStrategy.start();
-                }
-                else if(data.stage == 4){
-                    io.sockets.emit('start_game');
-                    stageStrategy.setStage(stageFour);
-                    stageStrategy.start();
-                }
-                else if(data.stage == 5){
-                    io.sockets.emit('start_game');
-                    stageStrategy.setStage(stageFive);
-                    stageStrategy.start();
-                }
-                else if(data.stage == 6){
-                    io.sockets.emit('start_game');
-                    stageStrategy.setStage(stageSix);
-                    stageStrategy.start();
-                }
-                else if(data.stage == 7){
-                    io.sockets.emit('start_game');
-                    stageStrategy.setStage(stageSeven);
-                    stageStrategy.start();
-                }
-                else if(data.stage == 8){
-                    io.sockets.emit('start_game');
-                    stageStrategy.setStage(stageEight);
-                    stageStrategy.start();
-                }
-            }else
-            {
-                stageStrategy.setStage(waitingStage);
-                stageStrategy.start();
             }
-        }
-
-    })
+    
+        })
+    
+    }
 
 
 
@@ -621,82 +659,143 @@ io.on('connection', function(socket) {
         }
     })
 
-    socket.on('item_detect', function(){
-        io.sockets.emit('coffee_effect', {coffee : true});
+    socket.on('item_detect', function(data){
+        if(data.name == "coffee"){
+            io.sockets.emit('coffee_effect', {coffee : true});
+        }
+        else if(data.name == "hotsix"){
+            io.sockets.emit('hotsix_effcet',{hotsix : true});
+        }
     })
 
 
     const itemRadius=20;
 
-    function itemLeftSideGenerator(){
+    function itemLeftSideGenerator(name){
         if(balls.length){
             var randomStartY = Math.floor(Math.random() * 768)
             var randomDestinationY = Math.floor(Math.random() * 768)
-            io.sockets.emit('item_generator', {
-                wall: 0,
-                startingX: itemRadius,
-                startingY: randomStartY,
-                destinationX: canvasWidth+itemRadius,
-                destinationY: randomDestinationY
-            })
+            if(name == "coffee"){
+                io.sockets.emit('item_generator', {
+                    wall: 0,
+                    startingX: itemRadius,
+                    startingY: randomStartY,
+                    destinationX: canvasWidth+itemRadius,
+                    destinationY: randomDestinationY,
+                    name : name
+                })
+            }
+            else if(name == "hotsix"){
+                io.sockets.emit('item_generator', {
+                    wall: 0,
+                    startingX: itemRadius,
+                    startingY: randomStartY,
+                    destinationX: canvasWidth+itemRadius,
+                    destinationY: randomDestinationY,
+                    name : name
+                })
+            }
+
         }
     }
 
-    function itemRightSideGenerator(){
+    function itemRightSideGenerator(name){
         if(balls.length){
             var randomStartY = Math.floor(Math.random() * 768)
             var randomDestinationY = Math.floor(Math.random() * 768)
-            io.sockets.emit('item_generator', {
-                wall: 1,
-                startingX: canvasWidth+itemRadius,
-                startingY: randomStartY,
-                destinationX: itemRadius,
-                destinationY: randomDestinationY
-            })
+            if(name == "coffee"){
+                io.sockets.emit('item_generator', {
+                    wall: 1,
+                    startingX: canvasWidth+itemRadius,
+                    startingY: randomStartY,
+                    destinationX: itemRadius,
+                    destinationY: randomDestinationY,
+                    name : name
+                })
+            }
+            else if(name == "hoxsix"){
+                io.sockets.emit('item_generator', {
+                    wall: 1,
+                    startingX: canvasWidth+itemRadius,
+                    startingY: randomStartY,
+                    destinationX: itemRadius,
+                    destinationY: randomDestinationY,
+                    name : name
+                })
+            }
+            
         }
     }
 
-    function itemUpSideGenerator(){
+    function itemUpSideGenerator(name){
         if(balls.length){
             var randomStartX = Math.floor(Math.random() * 1024)
             var randomDestinationX = Math.floor(Math.random() * 1024)
-            io.sockets.emit('item_generator', {
-                wall: 2,
-                startingX: randomStartX,
-                startingY: itemRadius,
-                destinationX: randomDestinationX,
-                destinationY: canvasHeight+itemRadius
-            })
+            if(name == "coffee"){
+                io.sockets.emit('item_generator', {
+                    wall: 2,
+                    startingX: randomStartX,
+                    startingY: itemRadius,
+                    destinationX: randomDestinationX,
+                    destinationY: canvasHeight+itemRadius,
+                    name : name
+                })
+            }
+            else if(name == "hotsix"){
+                io.sockets.emit('item_generator', {
+                    wall: 2,
+                    startingX: randomStartX,
+                    startingY: itemRadius,
+                    destinationX: randomDestinationX,
+                    destinationY: canvasHeight+itemRadius,
+                    name : name
+                })
+            }
+            
         }
     }
 
-    function itemDownSideGenerator(){
+    function itemDownSideGenerator(name){
         if(balls.length){
             var randomStartX = Math.floor(Math.random() * 1024)
             var randomDestinationX = Math.floor(Math.random() * 1024)
-            io.sockets.emit('item_generator', {
-                wall: 3,
-                startingX: randomStartX,
-                startingY: canvasHeight+itemRadius,
-                destinationX: randomDestinationX,
-                destinationY: itemRadius
-            })
+            if(name == "coffee"){
+                io.sockets.emit('item_generator', {
+                    wall: 3,
+                    startingX: randomStartX,
+                    startingY: canvasHeight+itemRadius,
+                    destinationX: randomDestinationX,
+                    destinationY: itemRadius,
+                    name : name
+                })
+            }
+            else if(name == "hotsix"){
+                io.sockets.emit('item_generator', {
+                    wall: 3,
+                    startingX: randomStartX,
+                    startingY: canvasHeight+itemRadius,
+                    destinationX: randomDestinationX,
+                    destinationY: itemRadius,
+                    name : name
+                })
+            }
+            
         }
     }
 
-    function itemGenerator(){
+    function itemGenerator(name){
         k = Math.floor(Math.random)*4
         if(k == 0){
-            itemLeftSideGenerator();
+            itemLeftSideGenerator(name);
         }
         else if(k == 1){
-            itemRightSideGenerator();
+            itemRightSideGenerator(name);
         }
         else if(k==2){
-            itemUpSideGenerator();
+            itemUpSideGenerator(name);
         }
         else{
-            itemDownSideGenerator();
+            itemDownSideGenerator(name);
         }
     }
 

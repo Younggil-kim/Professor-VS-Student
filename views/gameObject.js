@@ -206,7 +206,7 @@ class straightEnemyBall{
 }
 
 class itemBall{
-    constructor(x,y,destinationX,destinationY, wall){
+    constructor(x,y,destinationX,destinationY, wall, name){
 
         this.color = "#6f4e37";
         this.x = x;
@@ -218,9 +218,22 @@ class itemBall{
         this.wall = wall;
         this.radius = 20;
         this.aliveTime = 1000;
+        this.name = name;
     }
-    getColor(){
-        return this.color;
+    getName(){
+        return this.name;
+    }
+    setName(name){
+        this.name = name;
+    }
+    getColor(name){
+        if(name == "coffee"){
+            return this.color;
+        }
+        else if(name == "hotsix"){
+            return "#0067a3";
+        }
+        
     }
     setColor(color){
         this.color = color;

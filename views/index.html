@@ -89,13 +89,20 @@
                     break;
                 }
             }
+            for(var i = 0; i < straightEnemys.length ; i++){
+                if(  Math.sqrt((ball.getX() - straightEnemys[i].getX())**2 + (ball.getY() - straightEnemys[i].getY())**2) <= straightEnemys[i].getRadius() + ball.getRadius()){
+                    ball.setState(0);
+                    socket.emit('collision_detect', {id : ball.getId()});
+                    break;
+                }
+            }
         }
         
         function acquireDetection(){
             let ball = ballMap[myId]
             for(var i = 0; i < items.length ; i++){
-                if(  Math.sqrt((ball.getX() - items[i].getX())**2 + (ball.getY() - items[i].getY())**2) <= ball.getRadius() + items[i].getRadius()){
-                    socket.emit('item_detect');
+                if( ball.getState() != 0 && Math.sqrt((ball.getX() - items[i].getX())**2 + (ball.getY() - items[i].getY())**2) <= ball.getRadius() + items[i].getRadius()){
+                    socket.emit('item_detect', {name : items[i].getName()});//보낼때 아이템 정보 보내주기
                     items.splice(i,1);
                     break;
                 }
@@ -131,7 +138,6 @@
         var straightEnemys = [];
         var items = [];
 
-
         socket.on('force_disconnect', function(data){
             alert("현재 방에 3명 이상이거나 게임중 입니다.")
             window.close();
@@ -154,7 +160,7 @@
 
 
         socket.on('item_generator', function(data){
-            let item = new itemBall(data.startingX, data.startingY, data.destinationX, data.destinationY, data.wall)
+            let item = new itemBall(data.startingX, data.startingY, data.destinationX, data.destinationY, data.wall, data.name)
             items.push(item);
             console.log(items);
         })
@@ -163,6 +169,11 @@
         socket.on('coffee_effect', function(data){
             coffeeEffect = data.coffee;
         })
+        let hotsixEffect = false;
+        socket.on('hotsix_effect', function(data){
+            hotsixEffect = data.hotsix;
+        })
+
 
         let stage = 1;
         socket.on('stage_number', function(data){
@@ -181,6 +192,7 @@
 
         socket.on('game_win', function(data){
             alert("The students won! ::::  Congratulations! :::: Your Grade is A+")
+            window.open('about:blank', '_self');
         })
 
 
@@ -365,17 +377,33 @@
         function renderItems(){
             for (let j = 0; j < items.length; j++){
                     let item = items[j];
-                    ctx.beginPath();
-                    ctx.fillStyle = item.getColor();
-                    ctx.arc(item.getX(), item.getY(), item.getRadius(), 0, Math.PI *2, false);
-                    ctx.closePath();
-                    ctx.fill();
+                    if(item.getName() == "coffee"){
+                        ctx.beginPath();
+                        ctx.fillStyle = item.getColor("coffee");
+                        ctx.arc(item.getX(), item.getY(), item.getRadius(), 0, Math.PI *2, false);
+                        ctx.closePath();
+                        ctx.fill();
 
-                    ctx.beginPath();
-                    ctx.font = '15px Arial';
-                    ctx.fillStyle = '#6f4e37';
-                    ctx.fillText(`ITEM_COFFEE`, item.getX()-item.getRadius()-20,item.getY()-item.getRadius());
-                    ctx.closePath();
+                        ctx.beginPath();
+                        ctx.font = '15px Arial';
+                        ctx.fillStyle = '#6f4e37';
+                        ctx.fillText(`ITEM_COFFEE`, item.getX()-item.getRadius()-20,item.getY()-item.getRadius());
+                        ctx.closePath();
+                    }
+                    else if(item.getName() == "hotsix"){
+                        ctx.beginPath();
+                        ctx.fillStyle = item.getColor("hotsix");
+                        ctx.arc(item.getX(), item.getY(), item.getRadius(), 0, Math.PI *2, false);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        ctx.beginPath();
+                        ctx.font = '15px Arial';
+                        ctx.fillStyle = '#0067a3';
+                        ctx.fillText(`ITEM_HOTSIX`, item.getX()-item.getRadius()-20,item.getY()-item.getRadius());
+                        ctx.closePath();
+                    }
+
                 }
                 for ( let k = 0 ; k < items.length; k++){
                     let item = items[k];
@@ -446,7 +474,9 @@
             ctx.beginPath();
             ctx.fillStyle = '#000000';
             ctx.font = '50px Arial';
-            ctx.fillText(`Stage ${stage-1} Clear!!`,1024/2, 768/2);
+            ctx.fillText(`Stage ${stage-1} Clear!!`,1024/2-150, 768/2-80);
+            ctx.fillText(`The next stage will start shortly.`,1024/2-350, 768/2);
+            
             ctx.closePath();
         }
 
@@ -467,10 +497,14 @@
                 acquireDetection();
                 if(coffeeEffect){
                     enemys.length = 0;
+                    straightEnemys.length = 0;
                     items.length = 0;
                     coffeeEffect = false;
                 }
+                if(hotsixEffect){
 
+                    hotsixEffect = false;
+                }
                 if(balls.length){
                     sendData();
                 }
@@ -493,7 +527,7 @@
 
         function start(){
             if(!isStart){
-                socket.emit('start', { id: myId, stage : stage, waiting : false});
+                socket.emit('start', { id: myId, stage : stage, waiting : false, isStart : true});
                 isStart = true;
             }
         }
@@ -506,6 +540,15 @@
             stageClear = true;
             enemys.length = 0;
             straightEnemys.length = 0;
+            items.length = 0;
+            for (var i = 0 ; i < balls.length ; i++){
+                if( balls[i].getState() == 0){
+                    balls[i].setX(1024/2);
+                    balls[i].setY(768/2);
+                    balls[i].setState(1);
+            }
+            }
+
             isStart = false;
             socket.emit('start', { id: myId, stage : stage, waiting : true});//웨이팅 스테이지로 이동
             stage = data.stage;//스테이지 1 업 시켜주기
