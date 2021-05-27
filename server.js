@@ -1,11 +1,12 @@
 //server.js
 const express = require('express');
+const { isContext } = require('vm');
 // const {Stage} = require('./stage/stageHandler.js');
 const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 // const {StageOne} = require('./stage/stageHandler.js');
-
+// const pattern = require("./views/patternEnemy");
 
 server.listen(process.env.PORT || 8000, () => {
     console.log("서버가 대기중입니다.");
@@ -209,6 +210,95 @@ io.on('connection', function(socket) {
         enemyDownSideGenerator();
     }
 
+    function straightEnemyLeftSideGenerator(){
+        if(balls.length){
+            for(var i=0; i<11; i++){
+                var y = 30 + enemyRadius + i*68;
+                io.sockets.emit('straight_enemy_generator', {
+                    wall : 0,
+                    startingX:  enemyRadius,
+                    startingY:  y,
+                    destinationX:  canvasWidth+enemyRadius,
+                    destinationY: y,
+                })
+            }
+            var randomStartY = Math.floor(Math.random() * 768)
+            var randomDestinationY = Math.floor(Math.random() * 768)
+            io.sockets.emit('enemy_generator', {
+                wall : 0,
+                startingX:  enemyRadius,
+                startingY:  randomStartY,
+                destinationX:  canvasWidth+enemyRadius,
+                destinationY: randomDestinationY,
+            })
+        }
+    }
+
+    function straightEnemyRightSideGenerator(){
+        if(balls.length){
+            for(var i=0; i<11; i++){
+                var y = 30 + enemyRadius + i * 68;
+                io.sockets.emit('straight_enemy_generator',{
+                    wall : 1,
+                        startingX:  canvasWidth+enemyRadius,
+                        startingY:  y,
+                        destinationX:  enemyRadius,
+                        destinationY: y, 
+                })
+            }
+        }
+    }
+    
+    function straightEnemyUpSideGenerator(){
+        if(balls.length){
+            for(var i=0; i<15; i++){
+                var x = 30 + enemyRadius + i* 68;
+                io.sockets.emit('straight_enemy_generator', {
+                    wall : 2,
+                    startingX:  x,
+                    startingY:  enemyRadius,
+                    destinationX:  x,
+                    destinationY: canvasHeight+enemyRadius,
+                })
+            }
+        }
+    }
+
+    function straightEnemyDownSideGenerator(){
+        if(balls.length){
+            for(var i=0; i<15; i++){
+                var x = 30+ enemyRadius + i * 68;
+                io.sockets.emit('straight_enemy_generator', {
+                    wall : 3,
+                    startingX:  x,
+                    startingY:  canvasHeight+enemyRadius,
+                    destinationX:  x,
+                    destinationY: enemyRadius,
+                })
+            }
+        }
+    }
+
+    function straightEnemyGenerator(stage){
+        var random = Math.floor(Math.random() * 2)
+        if(stage == 1){
+            if(random == 1){
+                straightEnemyRightSideGenerator();
+            }
+            else{
+                straightEnemyLeftSideGenerator();
+            }
+        }
+        else{
+            if(random == 1){
+                straightEnemyDownSideGenerator();
+            }
+            else{
+                straightEnemyUpSideGenerator();
+            }
+        } 
+    }
+
     const WaitingStage = (function(){//전략패턴 사용
         function WaitingStage(){}
         WaitingStage.prototype.start = function(){
@@ -293,6 +383,9 @@ io.on('connection', function(socket) {
                     itemGenerator();
                     itemCount++;
                 }
+                if(count % 9 == 0){
+                    straightEnemyGenerator(1);
+                }
                 if (Math.floor(count) >= 18){
                     clearInterval(enemyInterval);
                     io.sockets.emit('stage_clear', {stage : stage+1});
@@ -318,6 +411,9 @@ io.on('connection', function(socket) {
                     console.log(count);
                     itemGenerator();
                     itemCount++;
+                }
+                if(count % 11 == 0){
+                    straightEnemyGenerator(0);
                 }
                 if (Math.floor(count) >= 21){
                     clearInterval(enemyInterval);
@@ -345,6 +441,9 @@ io.on('connection', function(socket) {
                     itemGenerator();
                     itemCount++;
                 }
+                if(count == 10 || count == 18){
+                    straightEnemyGenerator(1);
+                }
                 if (Math.floor(count) >= 25){
                     clearInterval(enemyInterval);
                     io.sockets.emit('stage_clear', {stage : stage+1});
@@ -370,6 +469,9 @@ io.on('connection', function(socket) {
                     console.log(count);
                     itemGenerator();
                     itemCount++;
+                }
+                if(count % 9 == 0){
+                    straightEnemyGenerator(0);
                 }
                 if (Math.floor(count) >= 27){
                     clearInterval(enemyInterval);
@@ -397,6 +499,9 @@ io.on('connection', function(socket) {
                     itemGenerator();
                     itemCount++;
                 }
+                if(count % 8 == 0){
+                    straightEnemyGenerator(1);
+                }
                 if (Math.floor(count) >= 30){
                     clearInterval(enemyInterval);
                     io.sockets.emit('stage_clear', {stage : stage+1});
@@ -422,6 +527,9 @@ io.on('connection', function(socket) {
                     console.log(count);
                     itemGenerator();
                     itemCount++;
+                }
+                if(count % 8 == 0){
+                    straightEnemyGenerator(0);
                 }
                 if (Math.floor(count) >= 33){
                     clearInterval(enemyInterval);

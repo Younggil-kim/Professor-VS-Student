@@ -128,7 +128,7 @@
 
         
         var enemys = [];
-
+        var straightEnemys = [];
         var items = [];
 
 
@@ -143,6 +143,13 @@
             let enemy = new EnemyBall(data.startingX, data.startingY, data.destinationX, data.destinationY, data.wall)
             enemys.push(enemy);
             console.log(enemys);
+        })
+
+        socket.on('straight_enemy_generator', function(data){
+            console.log('hello');
+            let straightEnemy = new straightEnemyBall(data.startingX, data.startingY, data.destinationX, data.destinationY, data.wall)
+            straightEnemys.push(straightEnemy);
+            console.log(straightEnemys);
         })
 
 
@@ -290,6 +297,69 @@
                 }
         }
 
+        function renderStraightEnemys(){
+            for (let j = 0; j < straightEnemys.length; j++){
+                    let straightEnemy = straightEnemys[j];
+                    ctx.beginPath();
+                    ctx.fillStyle = straightEnemy.getColor();
+                    ctx.arc(straightEnemy.getX(), straightEnemy.getY(), straightEnemy.getRadius(), 0, Math.PI *2, false);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                for ( let k = 0 ; k < straightEnemys.length; k++){
+                    let straightEnemy = straightEnemys[k];
+                    var distanceX = Math.abs(straightEnemy.getDestinationX() - straightEnemy.getInitialX());
+                    var distanceY = Math.abs(straightEnemy.getDestinationY() - straightEnemy.getInitialY());
+                    var speedY = distanceY/straightEnemy.getAliveTime()/1.5;
+                    var speedX = distanceX/straightEnemy.getAliveTime()/1.5;
+                    if(straightEnemy.getWall() == 0){//leftSide
+                        if (straightEnemy.getDestinationY() >= straightEnemy.getY()){
+                            straightEnemy.setX(straightEnemy.getX() + speedX);
+                            straightEnemy.setY(straightEnemy.getY() + speedY);
+                        }
+                        else{
+                            straightEnemy.setX(straightEnemy.getX() + speedX);
+                            straightEnemy.setY(straightEnemy.getY() - speedY);
+                        }
+                    }
+                    else if (straightEnemy.getWall() == 1){
+                        if (straightEnemy.getDestinationY() >= straightEnemy.getY()){
+                            straightEnemy.setX(straightEnemy.getX() - speedX);
+                            straightEnemy.setY(straightEnemy.getY() + speedY);
+
+                        }
+                        else{
+                            straightEnemy.setX(straightEnemy.getX() - speedX);
+                            straightEnemy.setY(straightEnemy.getY() - speedY);
+
+                        }
+                    }
+                    else if (straightEnemy.getWall() == 2){
+                        if (straightEnemy.getDestinationX() >= straightEnemy.getX()){
+                            straightEnemy.setX(straightEnemy.getX() + speedX);
+                            straightEnemy.setY(straightEnemy.getY() + speedY);
+                        }
+                        else{
+                            straightEnemy.setX(straightEnemy.getX() - speedX);
+                            straightEnemy.setY(straightEnemy.getY() + speedY);
+                        }
+                    }
+                    else if (straightEnemy.getWall() == 3){
+                        if (straightEnemy.getDestinationX() >= straightEnemy.getX()){
+                            straightEnemy.setX(straightEnemy.getX() + speedX);
+                            straightEnemy.setY(straightEnemy.getY() - speedY);
+                        }
+                        else{
+                            straightEnemy.setX(straightEnemy.getX() - speedX);
+                            straightEnemy.setY(straightEnemy.getY() - speedY);
+                        }
+                    }
+                    
+                    if (straightEnemy.getX() < -100 || straightEnemy.getX() > 1400 || straightEnemy.getY() < -100 || straightEnemy.getY() > 1400){
+                        straightEnemys.splice(k,1);
+                    }
+                }
+        }
 
         
         function renderItems(){
@@ -388,6 +458,7 @@
                 renderStage();
                 renderPlayers();
                 renderEnemys();
+                renderStraightEnemys();
                 renderItems();
                 renderTimer();
                 if(stageClear){
@@ -434,6 +505,7 @@
         socket.on('stage_clear',function(data){//스테이지 하나가 끝난 상태
             stageClear = true;
             enemys.length = 0;
+            straightEnemys.length = 0;
             isStart = false;
             socket.emit('start', { id: myId, stage : stage, waiting : true});//웨이팅 스테이지로 이동
             stage = data.stage;//스테이지 1 업 시켜주기
