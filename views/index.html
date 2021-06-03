@@ -7,18 +7,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professor VS Student</title>
     <style>
-        * {padding : 0; margin: 0;}
-        canvas {background: #eee; display: block; margin : 0 auto;}
+        * {padding : 0; margin: 20;}
+        canvas {background: #eee; display: block; margin : auto;}
+
+        .btn{
+            margin-top: 20px;
+        }
+        .title{
+            margin-bottom:  20px;
+        }
     </style>
     
     <script src="/socket.io/socket.io.js"></script>
     <script src="/views/keyHandler"></script>
     <script src="/views/gameObject"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.rtl.min.css" integrity="sha384-LPvXVVAlyPoBSGkX8UddpctDks+1P4HG8MhT7/YwqHtJ40bstjzCqjj+VVVDhsCo" crossorigin="anonymous">
 </head>
-<body>
+<body style="background-color: #6e6e6e ">        
     <div style="text-align: center;">
-        <font size="10em" color="green">
-            Professor VS Student
+        <font size="10em" color="black" font-weight= "bold" >
+            <b>Professor VS Student</b>
         </font>
    </div>
 
@@ -194,14 +202,14 @@
             if (data.isFail){
                 stage = 1;
                 alert("The professor won! ::: Game Over :::: Your Grade is F");
-                window.open('about:blank', '_self');
+                location.href= "/bad";
             }
         })
 
         socket.on('game_win', function(data){
             stage = 1;
             alert("The students won! ::::  Congratulations! :::: Your Grade is A+")
-            window.open('about:blank', '_self');
+            location.href= "/good";
         })
 
 
@@ -590,16 +598,10 @@
 
     </script>
     <div style="text-align: center;">
-        <button style= "width: 150px; height: 50px;" id="my_btn" onclick="start()";><font size ="5em">Game Start</font></button>
+        <button type="button" class="btn btn-success" style= "width: 150px; height: 50px;" id="my_btn" onclick="start()";><font size ="5em">Game Start</font></button>
     </div>
-    <div style="text-align: center;">
-        <font size="5em" color="green">
-            <p>Move through the Arrow key on the keyboard.</p> 
-            <p>Player0 is Host. The game starts only when the Host presses the Start button. </p> 
-            <p>Player0가 Host입니다. Host가 시작버튼을 눌러야 게임이 시작됩니다.</p> 
-            <span>키보드 방향키를 통해 움직이세요. </span>
-        </font>
-         
-    </div>
+
+
+
 </body>
 </html>

@@ -16,6 +16,18 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/views/index.html')
 })
 
+app.get('/good', (req, res) => {
+    res.sendFile(__dirname + '/views/goodending.html');
+})
+
+app.get('/bad', (req, res) => {
+    res.sendFile(__dirname + '/views/badending.html');
+})
+
+app.use('/views/images/ending.jpg', express.static(__dirname+ '/views/images/ending.jpg'));
+
+app.use('/views/images/good.png', express.static(__dirname+ '/views/images/good.png'));
+
 app.use('/views/keyHandler', express.static(__dirname+ '/views/keyHandler.js'))
 app.use('/views/gameObject', express.static(__dirname+ '/views/gameObject.js'))
 app.use('/stage/stageHandler', express.static(__dirname + '/stage/stageHandler.js'))
@@ -45,8 +57,6 @@ class Stage{
     }
 
 }
-
-
 
 
 var enemyRadius = 10;
@@ -89,8 +99,6 @@ function endGame(socket){
 }
 
 
-let stageGenerator;
-let stage;
 let isAccessFail = false;
 let enemyInterval;
 let itemInterval;
@@ -320,17 +328,11 @@ io.on('connection', function(socket) {
         StageOne.prototype.start = function(){
             let count = 0;
             let stage = 1;
-            let itemMaximum = 1;
-            let itemCount = 0;
             enemyFrequency = 1000;
             enemyInterval = setInterval(function () {
                 enemyGenerator();
                 count += 1;
 
-                if(count == 5 ){
-                    console.log(count);
-                    itemCount++;
-                }
                 if (Math.floor(count) >= 15){
                     clearInterval(enemyInterval);
                     for (var i = 0 ; i < balls.length ; i++){
@@ -642,8 +644,6 @@ io.on('connection', function(socket) {
     
     }
 
-
-
     socket.on('collision_detect', function(data){
         for( var i = 0 ; i < balls.length; i++){
             if(balls[i].id == data.id){
@@ -808,4 +808,5 @@ io.on('connection', function(socket) {
         }
         return isFail;
     }
+
 })
