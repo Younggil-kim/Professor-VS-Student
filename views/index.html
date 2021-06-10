@@ -510,8 +510,8 @@
             ctx.beginPath();
             ctx.fillStyle = '#000000';
             ctx.font = '50px Arial';
-            ctx.fillText(`Stage ${stage-1} Clear!!`,1024/2-150, 768/2-80);
-            ctx.fillText(`The next stage will start shortly.`,1024/2-350, 768/2);
+            ctx.fillText(`Stage ${stage-1} Clear!!`,1024/2-150, 730-50);
+            ctx.fillText(`The next stage will start shortly.`,1024/2-350, 730);
             ctx.closePath();
         }
 
@@ -613,9 +613,9 @@
 
     </div>
     
-    <audio controls id="bgm">    
-        <source src="/views/sounds/InvisibleSizeDown.mp3" type="audio/mp3">
-    </audio>
-
+        <audio controls id="bgm" hidden='true'>
+            <source src="/views/sounds/InvisibleSizeDown.mp3" type="audio/mp3">
+        </audio>
+    
 </body>
 </html>
