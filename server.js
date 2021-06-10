@@ -144,7 +144,7 @@ io.on('connection', function(socket) {
         color: newBall.color,
     });
 
-    if(balls.length > 7 || isAccessFail){//3명 이상 접속시 접속자 차단해버리기 
+    if(balls.length > 7 || isAccessFail){//7명 이상 접속시 접속자 차단해버리기 
         console.log(socket.id)
         socket.emit('force_disconnect', socket.id);
         endGame(socket);

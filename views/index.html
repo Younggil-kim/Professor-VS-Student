@@ -569,7 +569,6 @@
         function start(){
             if(!isStart){
                 socket.emit('start', { id: myId, stage : stage, waiting : false, isStart : true});
-                isStart = true;
             }
         }
 
