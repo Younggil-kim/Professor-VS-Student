@@ -16,6 +16,8 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/views/index.html')
 })
 
+
+
 app.get('/good', (req, res) => {
     res.sendFile(__dirname + '/views/goodending.html');
 })
@@ -25,8 +27,9 @@ app.get('/bad', (req, res) => {
 })
 
 app.use('/views/images/ending.jpg', express.static(__dirname+ '/views/images/ending.jpg'));
-
+app.use('/views/sounds/InvisibleSizeDown.mp3', express.static(__dirname+ '/views/sounds/InvisibleSizeDown.mp3'));
 app.use('/views/images/good.png', express.static(__dirname+ '/views/images/good.png'));
+app.use('/views/images/professor.png', express.static(__dirname+ '/views/images/professor.png'));
 
 app.use('/views/keyHandler', express.static(__dirname+ '/views/keyHandler.js'))
 app.use('/views/gameObject', express.static(__dirname+ '/views/gameObject.js'))
