@@ -1,12 +1,10 @@
 //server.js
 const express = require('express');
-const { isContext } = require('vm');
-// const {Stage} = require('./stage/stageHandler.js');
 const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
-// const {StageOne} = require('./stage/stageHandler.js');
-// const pattern = require("./views/patternEnemy");
+const { isContext } = require('vm');
+
 
 server.listen(process.env.PORT || 8000, () => {
     console.log("서버가 대기중입니다.");
@@ -25,6 +23,11 @@ app.get('/good', (req, res) => {
 app.get('/bad', (req, res) => {
     res.sendFile(__dirname + '/views/badending.html');
 })
+
+app.get('/start', (req, res) => {
+    res.sendFile(__dirname + '/views/startPage.html');
+})
+
 
 app.use('/views/images/ending.jpg', express.static(__dirname+ '/views/images/ending.jpg'));
 app.use('/views/sounds/InvisibleSizeDown.mp3', express.static(__dirname+ '/views/sounds/InvisibleSizeDown.mp3'));

@@ -515,18 +515,12 @@
             ctx.closePath();
         }
 
-        function renderProfessor(){
-            var img = new Image;
-            img.src = professor;
-            ctx.beginPath();
-            ctx.drawImage(img,0,0);
-            ctx.closePath
-        }
+
 
         function renderGame() {            
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                renderProfessor();
+
                 collisionDetection();
                 renderStage();
                 renderPlayers();
@@ -610,7 +604,6 @@
     </script>
     <div style="text-align: center;">
         <button type="button" class="btn btn-success" style= "width: 150px; height: 50px;" id="my_btn" onclick="start()";><font size ="5em">Game Start</font></button>
-
     </div>
     
         <audio controls id="bgm" hidden='true'>
