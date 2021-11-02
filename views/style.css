@@ -21,18 +21,22 @@ a {
     display: flex;
     list-style: none;
     padding-left: 0;
-
+    font-weight: bold;
+    font-size: 1.2rem;
+    
 }
 
 .navbar__menu li{
     padding : 8px 12px;
     color: black;
+    margin-right: 50px;
     
 }
 
 .navbar__name {
     font-size: 24px;
     color: black;
+    font-weight: bold;
 }
 
 .nickname{
@@ -69,6 +73,11 @@ a {
 .nickname__wrapper .second_wrapper .nickname__discription {
     padding-top: 4%;
 }
+
+.nickname__discription{
+    font-size: 1.1rem;
+}
+
 .nickname__wrapper .second_wrapper .nickname__input {
     border-radius: 5px;
     margin-top: 10px;
@@ -82,3 +91,30 @@ a {
 
     height: 25px;
 }
+
+.ranking__list{
+    display: flex;
+    list-style: none;
+    padding-left: 0;
+    font-weight: bold;
+    font-size: 1.2rem;
+    
+}
+
+.ranking__list li{
+    margin-right: 25px;
+    margin-left: 25px;
+}
+
+
+.ranking__container {
+    display: column;
+    position: absolute;
+    text-align: center;
+    top: 40%;
+    left: 40%;
+    border-radius: 10px;
+    border-width: 2px;
+    background-color: #FF774D;
+}
+

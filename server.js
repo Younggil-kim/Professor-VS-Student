@@ -10,6 +10,8 @@ server.listen(process.env.PORT || 8000, () => {
     console.log("서버가 대기중입니다.");
 })
 
+app.use(express.static('views'))
+
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/views/index.html')
 })
@@ -61,7 +63,6 @@ class Stage{
     start(){
         this.stage.start();
     }
-
 }
 
 
