@@ -21,8 +21,8 @@ a {
 
 .nav_bar{
     position: absolute;
-    top: 0%;
     width: 100%;
+    top : 0%;
     min-width: 800px;
     background-color: #fc5296;
     background-image: linear-gradient(315deg, #fc5296 0%, #f67062 74%); 
@@ -54,52 +54,6 @@ a {
     font-weight: bold;
 }
 
-.nickname{
-    justify-content: center;
-    align-items: center;
-    height: 500px;
-    width: 500px;
-    border-width: 1px;
-    border-color: black;
-    display: flex;
-}
-
-.nickname__wrapper {
-    display: column;
-    width: 400px;
-    text-align: center;
-
-    box-shadow:  0 0 10px 2px rgba(100 , 100, 100);
-    background-color: #fc5296;
-    background-image: linear-gradient(315deg, #fc5296 0%, #f67062 74%); 
-   
-    border-radius: 10px;
-    
-  }
-  
-.nickname__wrapper .nickname__discription {
-    /* display: inline-block; */
-    margin-bottom: 10px;
-    vertical-align: middle;
-    
-}
- 
-.nickname__wrapper .second_wrapper {
-
-    width: 400px;
-    height: 130px;
-    background-color: #fc5296;
-    background-image: linear-gradient(315deg, #fc5296 0%, #f67062 74%); 
-    border-radius: 1rem;
-
-}
-.nickname__wrapper .second_wrapper .nickname__discription {
-    padding-top: 4%;
-}
-
-.nickname__discription{
-    font-size: 1.1rem;
-}
 
 button{
     background-color: #FF774D;
@@ -116,28 +70,14 @@ button:hover{
 }
 
 
-
-.nickname__wrapper .second_wrapper .nickname__input {
-    border-radius: 5px;
-    margin-top: 10px;
-    width: 300px;
-    height: 30px;
-}
-
-.nickname__wrapper .confirm {
-    border-radius: 5px;
-    
-
-    height: 25px;
-}
-
 .ranking__list{
     display: flex;
     list-style: none;
     padding-left: 0;
     font-weight: bold;
     font-size: 1.2rem;
-    
+    padding-right: 4rem;
+    padding-left: 4rem;
 }
 
 .ranking__list li{
@@ -145,16 +85,19 @@ button:hover{
     margin-left: 25px;
 }
 
-
 .ranking__container {
     display: column;
-    position: absolute;
+    /* position: absolute; */
     text-align: center;
-    top: 40%;
-    left: 40%;
+    box-shadow:  0 0 10px 2px rgba(100 , 100, 100);
     border-radius: 10px;
     border-width: 2px;
-    background-color: #FF774D;
+    background-color: #fc5296;
+    background-image: linear-gradient(315deg, #fc5296 0%, #f67062 74%); 
+    min-width: 400px;
     
 }
 
+td{
+    width: 200px;
+}
