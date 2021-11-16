@@ -45,6 +45,7 @@
         var upPressed = false;
         var downPressed = false;
 
+        const nickName = localStorage.getItem("nickName")
         document.addEventListener("keydown", keyDownHandler,false);
         document.addEventListener("keyup", keyUpHandler,false);
 
@@ -238,7 +239,7 @@
                     
                     ctx.beginPath();
                     ctx.font = '15px Arial';
-                    ctx.fillText(`player ${i}`,ball.getX()- ball.getRadius()-7, ball.getY() - ball.getRadius());
+                    ctx.fillText(`${nickName.padStart(Math.floor(8-Math.floor(nickName.length/2))+1).padEnd(Math.floor((8-nickName.length)/2))}`,ball.getX()- ball.getRadius()-7, ball.getY() - ball.getRadius());
                     ctx.closePath();
                 }
                 let curPlayer = ballMap[myId];

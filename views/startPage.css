@@ -19,41 +19,6 @@ a {
 }
 
 
-.nav_bar{
-    position: absolute;
-    top: 0%;
-    width: 100%;
-    min-width: 800px;
-    background-color: #fc5296;
-    background-image: linear-gradient(315deg, #fc5296 0%, #f67062 74%); 
-    padding : 8px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.navbar__menu{
-    display: flex;
-    list-style: none;
-    padding-left: 0;
-    font-weight: bold;
-    font-size: 1.2rem;
-    
-}
-
-.navbar__menu li{
-    padding : 8px 12px;
-    color: black;
-    margin-right: 50px;
-    
-}
-
-.navbar__name {
-    font-size: 24px;
-    color: black;
-    font-weight: bold;
-}
-
 .nickname{
     justify-content: center;
     align-items: center;

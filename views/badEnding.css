@@ -24,8 +24,9 @@ button{
     font-family: inherit;
     border: none;
     border-radius: 10px;
-    padding: 5px 5px;
-    margin: 5px
+    padding: 5px 30px;
+    margin-bottom: 20px;
+    font-weight: bold;
 }
 
 button:hover{
@@ -33,24 +34,9 @@ button:hover{
 }
 
 
-.ranking__list{
-    display: flex;
-    list-style: none;
-    padding-left: 0;
-    font-weight: bold;
-    font-size: 1.2rem;
-    padding-right: 4rem;
-    padding-left: 4rem;
-}
 
-.ranking__list li{
-    margin-right: 25px;
-    margin-left: 25px;
-}
-
-.ranking__container {
+.fail_container {
     display: column;
-    /* position: absolute; */
     text-align: center;
     box-shadow:  0 0 10px 2px rgba(100 , 100, 100);
     border-radius: 10px;
@@ -61,6 +47,9 @@ button:hover{
     
 }
 
-td{
-    width: 200px;
+.fail_dist{
+    font-size: 1.1rem;
+    padding-left: 4rem;
+    padding-right: 4rem;
+    margin-bottom: 10px;
 }

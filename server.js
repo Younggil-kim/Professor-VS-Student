@@ -16,14 +16,12 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/views/index.html')
 })
 
-
-
 app.get('/good', (req, res) => {
-    res.sendFile(__dirname + '/views/goodending.html');
+    res.sendFile(__dirname + '/views/goodEndingPage.html');
 })
 
 app.get('/bad', (req, res) => {
-    res.sendFile(__dirname + '/views/badending.html');
+    res.sendFile(__dirname + '/views/badEndingPage.html');
 })
 
 app.get('/start', (req, res) => {
