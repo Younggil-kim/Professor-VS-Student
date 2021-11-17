@@ -1,0 +1,53 @@
+
+canvas {
+    background: #eee;
+    display: block;
+    margin : auto;
+}
+
+
+body{
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    background-color: #b8c6db;
+    background-image: linear-gradient(315deg, #b8c6db 0%, #f5f7fa 74%);
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.btn{
+    margin-top: 20px;
+}
+
+.title{
+    margin-bottom:  20px;
+}
+
+#myCanvas{
+    box-shadow:  0 0 10px 2px rgba(100 , 100, 100);
+}
+
+#start_btn{
+    width: 150px;
+    height: 50px;
+    font-size: 1.3rem;
+    margin-top: 15px;
+    font-weight: bold;
+    background-color: #FF774D;
+    color:black;
+    font-family: inherit;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 30px;
+    font-weight: bold;
+    cursor: pointer
+}
+
+#start_btn:hover{
+    background-color: #c0392b;
+    
+}
+
