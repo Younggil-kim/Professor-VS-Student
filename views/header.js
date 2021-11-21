@@ -7,12 +7,15 @@ header.innerHTML = `
         </div>
 
         <ul class="navbar__menu">
+            <li><a href="#" id="modal_btn">게임 방법</a></li>
             
-            <li><a href="">게임 방법</a></li>
-            <li><a href="">랭킹</a></li>
+            
+            <li><a href="/rank">랭킹</a></li>
             <li><a href="">방명록</a></li>
         </ul>
 
         <ul class="navbar__icons">
             <i class="fas fa-share-alt-square"></i>
-        </ul>`;
+        </ul>`
+    ;
+

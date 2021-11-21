@@ -5,7 +5,6 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const { isContext } = require('vm');
 
-
 server.listen(process.env.PORT || 8000, () => {
     console.log("서버가 대기중입니다.");
 })
@@ -28,12 +27,11 @@ app.get('/start', (req, res) => {
     res.sendFile(__dirname + '/views/startPage.html');
 })
 
+app.get('/rank', (req, res) => {
+    res.sendFile(__dirname + '/views/ranking.html');
+})
 
-app.use('/views/images/ending.jpg', express.static(__dirname+ '/views/images/ending.jpg'));
 app.use('/views/sounds/InvisibleSizeDown.mp3', express.static(__dirname+ '/views/sounds/InvisibleSizeDown.mp3'));
-app.use('/views/images/good.png', express.static(__dirname+ '/views/images/good.png'));
-app.use('/views/images/professor.png', express.static(__dirname+ '/views/images/professor.png'));
-
 app.use('/views/keyHandler', express.static(__dirname+ '/views/keyHandler.js'))
 app.use('/views/gameObject', express.static(__dirname+ '/views/gameObject.js'))
 app.use('/stage/stageHandler', express.static(__dirname + '/stage/stageHandler.js'))

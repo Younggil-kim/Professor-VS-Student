@@ -18,19 +18,6 @@ a {
     
 }
 
-button{
-    background-color: #FF774D;
-    color:black;
-    font-family: inherit;
-    border: none;
-    border-radius: 10px;
-    padding: 5px 5px;
-    margin: 5px
-}
-
-button:hover{
-    background-color: #c0392b;
-}
 
 
 .ranking__list{

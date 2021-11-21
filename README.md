@@ -9,7 +9,7 @@
 
 ## 로컬에서 설치하실 경우
 - Node.js가 필요합니다.
-- 깃, npm을 통해 클론 해 가실 경우, npm i를 터미널창에 입력해 주십시오.
+- git, npm을 통해 클론 해 가실 경우, npm i를 터미널창에 입력해 주십시오.
 
 ```
   npm i
@@ -56,7 +56,7 @@
 │   │ 
 │   │
 │   ├── sounds/                  
-│   │   ├── invisibleSizeDown.mp3    - BackgroundMusic
+│   │   ├── invisibleSizeDown.mp3    - Background Music
 │   │  
 │   
 │      
