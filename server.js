@@ -5,14 +5,14 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const { isContext } = require('vm');
 
-server.listen(process.env.PORT || 8000, () => {
+server.listen(8000, () => {
     console.log("서버가 대기중입니다.");
 })
 
 app.use(express.static('views'))
 
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/views/index.html')
+    res.sendFile(__dirname + '/views/startPage.html')
 })
 
 app.get('/good', (req, res) => {
@@ -23,8 +23,8 @@ app.get('/bad', (req, res) => {
     res.sendFile(__dirname + '/views/badEndingPage.html');
 })
 
-app.get('/start', (req, res) => {
-    res.sendFile(__dirname + '/views/startPage.html');
+app.get('/game', (req, res) => {
+    res.sendFile(__dirname + '/views/gamePage.html');
 })
 
 app.get('/rank', (req, res) => {

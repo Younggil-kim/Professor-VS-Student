@@ -16,7 +16,7 @@ function enterGame(){
         });
     }else{
         localStorage.setItem("nickName", enter);
-        location.href= "/"
+        location.href= "/game"
     }
 
 

@@ -117,7 +117,12 @@
         let hotsixEffect = false;
 
         socket.on('force_disconnect', function(data){
-            alert("현재 방에 3명 이상이거나 게임중 입니다.")
+            Swal.fire({
+                title: "게임 알림",
+                text: "현재 게임 중입니다. 나중에 접속 해 주세요.",
+                confirmButtonText: "네",
+                confirmButtonColor: '#FC5296'
+            });
             window.close();
             self.close();
             window.opener = window.location.href; self.close();
@@ -169,15 +174,28 @@
         socket.on('game_over', function(data){//전 플레이어가 죽으면 나오는 이벤트
             if (data.isFail){
                 stage = 1;
-                alert("The professor won! ::: Game Over :::: Your Grade is F");
-                location.href= "/bad";
+                Swal.fire({
+                    title: "게임 알림",
+                    text: "교수님이 이겼습니다.",
+                    confirmButtonText: "아니..",
+                    confirmButtonColor: '#FC5296'
+                }).then((result)=> {
+
+                    location.href= "/bad";
+                })
             }
         })
 
         socket.on('game_win', function(data){
             stage = 1;
-            alert("The students won! ::::  Congratulations! :::: Your Grade is A+")
-            location.href= "/good";
+            Swal.fire({
+                title: "게임 알림",
+                text: "당신이 이겼습니다! 축하드립니다.",
+                confirmButtonText: "확인",
+                confirmButtonColor: '#FC5296'
+            }).then((result) => {
+                location.href= "/good";
+            })
         })
 
 
@@ -206,7 +224,7 @@
                     
                     ctx.beginPath();
                     ctx.font = '15px Arial';
-                    ctx.fillText(`${nickName.padStart(Math.floor(8-Math.floor(nickName.length/2))+1).padEnd(Math.floor((8-nickName.length)/2))}`,ball.getX()- ball.getRadius()-7, ball.getY() - ball.getRadius());
+                    ctx.fillText(`${nickName.padStart(Math.floor(8-Math.floor(nickName.length)/2)).padEnd(Math.floor((8-nickName.length)/2))}`,ball.getX()- ball.getRadius()-7, ball.getY() - ball.getRadius());
                     ctx.closePath();
                 }
                 let curPlayer = ballMap[myId];
