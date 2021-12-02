@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+body{
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    background-color: #b8c6db;
+    background-image: linear-gradient(315deg, #b8c6db 0%, #f5f7fa 74%);
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+}
+*{
+    box-sizing: border-box;
+}
+
+a {
+    text-decoration: none;
+    color: black;
+    
+}
+
+h4{
+    margin:5px
+}
+
+button{
+    background-color: #FF774D;
+    color:black;
+    font-family: inherit;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 5px;
+    margin: 5px
+}
+
+button:hover{
+    background-color: #c0392b;
+}
+
+.comment_container{
+    width: 800px;
+    display: column;
+    /* text-align: center; */
+    box-shadow:  0 0 10px 2px rgba(100 , 100, 100);
+    border-radius: 10px;
+    border-width: 2px;
+    background-color: #fc5296;
+    background-image: linear-gradient(315deg, #fc5296 0%, #f67062 74%); 
+    min-width: 400px;
+}
+.comment_count{
+    margin: 10px;
+}
+#comment-input{
+    /* border-radius: 2px; */
+    margin-left: 10px;
+    width: 90%;
+    height: 50px;
+}
+.comments{
+    margin-top: 20px;
+    display: column;
+    border-radius: 10px;
+    border-width: 2px;
+    border : 1px solid; 
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+.nickName{
+    margin-left : 5px;
+}
+.contents{
+    margin-left : 5px;
+}
+.date{
+    margin-left : 5px;
+}
+.comment_count{
+    font-weight: bold;
+}
