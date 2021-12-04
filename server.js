@@ -12,7 +12,7 @@ server.listen(8000, () => {
 app.use(express.static('views'))
 
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/views/startPage.html')
+    res.sendFile(__dirname + '/views/index.html')
 })
 
 app.get('/good', (req, res) => {
