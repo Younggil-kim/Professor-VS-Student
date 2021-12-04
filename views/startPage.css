@@ -18,6 +18,9 @@ a {
     
 }
 
+*{
+    box-sizing: border-box;
+}
 
 .nickname{
     justify-content: center;
@@ -35,9 +38,9 @@ a {
     text-align: center;
 
     box-shadow:  0 0 10px 2px rgba(100 , 100, 100);
-    background-color: #fc5296;
-    background-image: linear-gradient(315deg, #fc5296 0%, #f67062 74%); 
-   
+    background-color: #f9c1b1;
+    background-image: linear-gradient(315deg, #f9c1b1 0%, #fb8085 74%);
+    
     border-radius: 10px;
     
   }
@@ -53,8 +56,8 @@ a {
 
     width: 400px;
     height: 130px;
-    background-color: #fc5296;
-    background-image: linear-gradient(315deg, #fc5296 0%, #f67062 74%); 
+    background-color: #f9c1b1;
+    background-image: linear-gradient(315deg, #f9c1b1 0%, #fb8085 74%);
     border-radius: 1rem;
 
 }

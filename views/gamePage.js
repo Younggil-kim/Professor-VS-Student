@@ -210,6 +210,7 @@
 
 
         function renderPlayers(){
+            let curPlayer = ballMap[myId];
             for (let i = 0; i < balls.length; i++) {
                     let ball = balls[i];
                     if (ball.getState() == 0){
@@ -221,13 +222,20 @@
                     ctx.fill();
                     ctx.closePath();
 
-                    
-                    ctx.beginPath();
-                    ctx.font = '15px Arial';
-                    ctx.fillText(`${nickName.padStart(Math.floor(8-Math.floor(nickName.length)/2)).padEnd(Math.floor((8-nickName.length)/2))}`,ball.getX()- ball.getRadius()-7, ball.getY() - ball.getRadius());
-                    ctx.closePath();
+                    if( ball == curPlayer){
+
+                        ctx.beginPath();
+                        ctx.font = '15px Arial';
+                        ctx.fillText(`${nickName}`,ball.getX()- ball.getRadius()-7, ball.getY() - ball.getRadius());
+                        ctx.closePath();
+                    }else{
+                        ctx.beginPath();
+                        ctx.font = '15px Arial';
+                        ctx.fillText(`plater${i}`,ball.getX()- ball.getRadius()-7, ball.getY() - ball.getRadius());
+                        ctx.closePath();
+                    }
                 }
-                let curPlayer = ballMap[myId];
+                
                 if (rightPressed){
                     if (curPlayer.getX() <= 1024 - curPlayer.getRadius()){
                         curPlayer.setX(curPlayer.getX() + curPlayer.getPlayerSpeed());
@@ -554,7 +562,8 @@
 
         socket.on('start_game', function(){
             isStart = true;
-            var bgm = document.getElementById("bgm");
+            let bgm = document.getElementById("bgm");
+            bgm.volume = 0.3;
             bgm.play();
         })
         let stageClear = false;

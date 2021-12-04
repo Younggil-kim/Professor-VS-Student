@@ -2,8 +2,8 @@ const header = document.getElementById('nav_bar')
 
 header.innerHTML = `
         <div class="navbar__name">
-            <a href="/"><i class="fas fa-gamepad"></i></a>
-            <a href="/">Professor vs Student</a>
+            <a href="/game"><i class="fas fa-gamepad"></i></a>
+            <a href="/game">Professor vs Student</a>
         </div>
 
         <ul class="navbar__menu">
