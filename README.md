@@ -3,9 +3,8 @@
 # Professor VS Student
 ## 개요
 - 학교에서 Media Software Engineering을 수강하면서 만든 웹 게임입니다.
-- 간단한 총알 피하기 게임이지만, 멀티플레이가 지원됩니다.
 - [여기](https://media-software-engineering.herokuapp.com/)에서 플레이 해 볼 수 있습니다. 
-
+- Socket.io를 사용해 실시간 멀티플레이 지원
 
 ## 로컬에서 설치하실 경우
 - Node.js가 필요합니다.
